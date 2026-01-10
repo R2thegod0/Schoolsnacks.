@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyper Snacks | Official Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- DESIGN SYSTEM (Decorated Dark Mode) --- */
+        :root {
+            --bg: #0f0f13;
+            --surface: #1e1e24;
+            --primary: #00e5ff; /* Cyan for buttons/highlights */
+            --accent: #ff2a6d;  /* Pink for alerts/price */
+            --text: #ffffff;
+            --text-muted: #a0a0a0;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
+        
+        /* Navbar */
+        nav { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.2rem; font-weight: bold; letter-spacing: 1px; color: var(--primary); text-transform: uppercase; }
+        .cart-icon { position: relative; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .cart-icon:hover { color: var(--primary); }
+        .cart-count { position: absolute; top: -8px; right: -10px; background: var(--accent); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%; }
+
+        /* Hero Section */
+        .hero { text-align: center; padding: 40px 20px; border-bottom: 1px solid #333; background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f13 100%); }
+        .hero h1 { margin: 0; font-size: 2.2rem; color: var(--primary); text-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+        .hero p { color: var(--text-muted); margin-top: 10px; font-size: 1rem; }
+
+        /* Product Grid */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
+        
+        .card { 
+            background: var(--surface); border-radius: 12px; overflow: hidden; 
+            border: 1px solid #333; display: flex; flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s; 
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 5px 15px rgba(0, 229, 255, 0.1); }
+        
+        .card img { width: 100%; height: 140px; object-fit: cover; }
+        .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .card h3 { margin: 0 0 5px 0; font-size: 1rem; font-weight: 600; }
+        .card .price { color: var(--accent); font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; }
+        
+        .add-btn { 
+            background: #2a2a30; color: white; border: 1px solid #444; 
+            padding: 8px; width: 100%; border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: bold;
+        }
+        .add-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
+
+        /* Floating Checkout Button */
+        .floating-bar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: #000;
+            padding: 15px 30px; border-radius: 30px;
+            font-weight: bold; box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+            cursor: pointer; z-index: 99; display: none; width: 80%; max-width: 300px; text-align: center;
+            animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popUp { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; backdrop-filter: blur(5px); }
+        .modal-content { 
+            background: var(--surface); width: 90%; max-width: 400px; margin: 50px auto; 
+            padding: 25px; border-radius: 15px; border: 1px solid var(--primary); position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #aaa; }
+        .close-btn:hover { color: white; }
+        
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .cart-total { font-size: 1.2rem; font-weight: bold; text-align: right; margin-top: 15px; color: var(--primary); }
+
+        input { 
+            width: 100%; padding: 12px; margin: 8px 0; background: #0a0a0a; 
+            border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; 
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        .checkout-btn { 
+            width: 100%; background: linear-gradient(45deg, var(--accent), #ff00cc); 
+            color: white; border: none; padding: 15px; border-radius: 8px; 
+            font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 15px; 
+            box-shadow: 0 4px 15px rgba(255, 42, 109, 0.3);
+        }
+
+        /* Admin Styles */
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .admin-order { background: #252525; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); border-radius: 4px; }
+        .status-badge { background: #333; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">⚡ HYPER SNACKS</div>
+        <div class="cart-icon" onclick="openCart()">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count" id="cartCount">0</span>
+        </div>
+    </nav>
+
+    <div style="text-align: right; padding: 5px 20px;">
+        <span onclick="toggleAdmin()" style="font-size: 0.8rem; color: #444; cursor: pointer; text-decoration: underline;">Staff Login</span>
+    </div>
+
+    <div id="shopSection">
+        <div class="hero">
+            <h1>Refuel Your Day</h1>
+            <p>Order online • Cash on Delivery • Within 2km</p>
+        </div>
+
+        <div class="container">
+            <div class="grid" id="productGrid">
+                </div>
+        </div>
+    </div>
+
+    <div class="floating-bar" id="floatBar" onclick="openCart()">
+        View Cart • ₹<span id="floatTotal">0</span>
+    </div>
+
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeCart()">&times;</span>
+            <h2 style="margin-top:0;">Your Cart</h2>
+            
+            <div id="cartItemsContainer" style="max-height: 200px; overflow-y: auto;">
+                </div>
+            
+            <div class="cart-total">Total: ₹<span id="cartTotal">0</span></div>
+
+            <hr style="border-color: #333; margin: 20px 0;">
+
+            <h3 style="margin-bottom: 10px;">Delivery Details</h3>
+            <input type="text" id="custName" placeholder="Name & Class (e.g. Aryan 10-B)">
+            <input type="text" id="custLoc" placeholder="Location (e.g. Main Gate)">
+            <input type="number" id="custDist" placeholder="Distance (km)" step="0.1">
+            <div style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">*Must be less than 2.0 km</div>
+
+            <button class="checkout-btn" onclick="placeOrder()">CONFIRM ORDER (COD)</button>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal">
+        <div class="modal-content" style="max-width: 600px; width: 95%;">
+            <span class="close-btn" onclick="closeAdmin()">&times;</span>
+            <div class="admin-header">
+                <h2 style="color: var(--accent); margin:0;">📦 Live Orders</h2>
+                <span class="status-badge">Real-time</span>
+            </div>
+            <div id="adminOrdersContainer" style="max-height: 60vh; overflow-y: auto;">
+                <p>Connecting to satellite...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 1. IMPORT FIREBASE (Using your version 12.7.0)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc } 
+        from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+        // 2. YOUR CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyCw7hPKmKEK0foI2HxZGUuMcp5UMu5RaDs",
+            authDomain: "schoolsnacks-44e3a.firebaseapp.com",
+            projectId: "schoolsnacks-44e3a",
+            storageBucket: "schoolsnacks-44e3a.firebasestorage.app",
+            messagingSenderId: "305869556514",
+            appId: "1:305869556514:web:e043c76d7da810ddc4b37b",
+            measurementId: "G-BYFMCJSPX2"
+        };
+
+        // 3. INITIALIZE
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // --- STORE LOGIC STARTS HERE ---
+
+        // A. PRODUCT DATA (Replace images with real URLs later)
+        const products = [
+            { id: 1, name: "Spicy Lays", price: 20, img: "https://images.unsplash.com/photo-1566478919030-261443943938?auto=format&fit=crop&w=300&q=80" },
+            { id: 2, name: "Dairy Milk", price: 40, img: "https://images.unsplash.com/photo-1628135805273-057088922240?auto=format&fit=crop&w=300&q=80" },
+            { id: 3, name: "Chicken Sub", price: 80, img: "https://images.unsplash.com/photo-1509722747741-092071b55fea?auto=format&fit=crop&w=300&q=80" },
+            { id: 4, name: "Red Bull", price: 120, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=300&q=80" },
+            { id: 5, name: "Glazed Donut", price: 50, img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=300&q=80" },
+            { id: 6, name: "Nachos", price: 60, img: "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=300&q=80" },
+        ];
+
+        let cart = [];
+
+        // B. RENDER PRODUCTS
+        const grid = document.getElementById('productGrid');
+        products.forEach(p => {
+            const el = document.createElement('div');
+            el.className = 'card';
+            el.innerHTML = `
+                <img src="${p.img}" alt="${p.name}">
+                <div class="card-body">
+                    <div>
+                        <h3>${p.name}</h3>
+                        <div class="price">₹${p.price}</div>
+                    </div>
+                    <button class="add-btn" onclick="window.addToCart(${p.id})">ADD TO CART</button>
+                </div>
+            `;
+            grid.appendChild(el);
+        });
+
+        // C. CART SYSTEM
+        window.addToCart = (id) => {
+            const item = products.find(p => p.id === id);
+            cart.push(item);
+            updateCartUI();
+        };
+
+        function updateCartUI() {
+            document.getElementById('cartCount').innerText = cart.length;
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('floatTotal').innerText = total;
+            document.getElementById('cartTotal').innerText = total;
+
+            document.getElementById('floatBar').style.display = cart.length > 0 ? 'block' : 'none';
+
+            const container = document.getElementById('cartItemsContainer');
+            container.innerHTML = "";
+            cart.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <span>${item.name}</span>
+                        <span>₹${item.price} <i class="fas fa-trash" style="color:#d32f2f; cursor:pointer; margin-left:10px;" onclick="window.removeFromCart(${index})"></i></span>
+                    </div>
+                `;
+            });
+        }
+
+        window.removeFromCart = (index) => {
+            cart.splice(index, 1);
+            updateCartUI();
+        };
+
+        window.openCart = () => document.getElementById('cartModal').style.display = 'block';
+        window.closeCart = () => document.getElementById('cartModal').style.display = 'none';
+
+        // D. ORDER PLACEMENT (Sending to Firestore)
+        window.placeOrder = async () => {
+            const name = document.getElementById('custName').value;
+            const loc = document.getElementById('custLoc').value;
+            const dist = parseFloat(document.getElementById('custDist').value);
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+            if(!name || !loc || !dist) return alert("⚠️ Please fill all details!");
+            if(cart.length === 0) return alert("⚠️ Cart is empty!");
+            
+            // STRICT DISTANCE RULE
+            if(dist > 2.0) {
+                alert("❌ Sorry! Delivery is strictly within 2km.");
+                return;
+            }
+
+            const btn = document.querySelector('.checkout-btn');
+            btn.innerHTML = "Processing...";
+            btn.disabled = true;
+
+            try {
+                // Add to Database
+                await addDoc(collection(db, "orders"), {
+                    customer: name,
+                    location: loc,
+                    distance: dist,
+                    items: cart.map(i => i.name),
+                    total: total,
+                    status: 'Pending',
+                    timestamp: new Date()
+                });
+                
+                alert("✅ Order Placed! Please have cash ready.");
+                cart = [];
+                updateCartUI();
+                window.closeCart();
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                alert("❌ Order failed. Check internet connection.");
+            } finally {
+                btn.innerHTML = "CONFIRM ORDER (COD)";
+                btn.disabled = false;
+            }
+        };
+
+        // E. ADMIN PANEL LOGIC
+        window.toggleAdmin = () => {
+            const pwd = prompt("🔐 Enter Staff Password:");
+            if(pwd === "hyper123") { // CHANGE THIS PASSWORD
+                document.getElementById('adminModal').style.display = 'block';
+                loadLiveOrders();
+            } else {
+                alert("Access Denied");
+            }
+        };
+        window.closeAdmin = () => document.getElementById('adminModal').style.display = 'none';
+
+        function loadLiveOrders() {
+            const q = query(collection(db, "orders"), orderBy("timestamp", "desc"));
+            const container = document.getElementById('adminOrdersContainer');
+            
+            // Real-time listener (updates automatically)
+            onSnapshot(q, (snapshot) => {
+                container.innerHTML = "";
+                if(snapshot.empty) {
+                    container.innerHTML = "<p style='text-align:center; color:#666;'>No active orders.</p>";
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const orderId = docSnap.id;
+                    
+                    if(data.status !== 'Delivered') { 
+                        const date = data.timestamp ? data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+                        const itemsList = data.items.join(", ");
+                        
+                        container.innerHTML += `
+                            <div class="admin-order">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                    <strong style="font-size:1.1rem;">${data.customer}</strong>
+                                    <span style="color:var(--primary); font-weight:bold;">₹${data.total}</span>
+                                </div>
+                                <div style="font-size:0.9rem; color:#ccc; line-height:1.4;">
+                                    📍 ${data.location} (${data.distance}km)<br>
+                                    🛍️ <span style="color:white;">${itemsList}</span>
+                                </div>
+                                <div style="text-align:right; margin-top:10px; padding-top:10px; border-top:1px dashed #444;">
+                                    <small style="float:left; color:#666; margin-top:5px;">${date}</small>
+                                    <button onclick="window.markDelivered('${orderId}')" style="background:var(--accent); border:none; color:white; padding:6px 12px; border-radius:4px; cursor:pointer;">Mark Delivered</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            });
+        }
+
+        window.markDelivered = async (id) => {
+            if(confirm("Mark this order as delivered?")) {
+                const orderRef = doc(db, "orders", id);
+                await updateDoc(orderRef, { status: "Delivered" });
+            }
+        };
+    </script>
+</body>
+</html>
