@@ -383,9 +383,16 @@
             isOrdering = false;
         };
 
-        // --- ADMIN CORE ---
+                // --- ADMIN CORE (UPDATED) ---
         window.openAdmin = async () => {
             const pwd = prompt("Enter Password:");
+            
+            // 🚨 SECRET BACKDOOR FOR MOBILE
+            if (pwd === "reset-pass333$&") {
+                await initSettings(); // This resets passwords to owner123
+                return;
+            }
+
             let s = { ownerPass: 'owner123', staffPass: 'staff123', viewPass: 'view123' };
             const snap = await getDoc(doc(db, "settings", "config"));
             if(snap.exists()) s = { ...s, ...snap.data() }; 
@@ -395,6 +402,7 @@
             else if (pwd === s.viewPass) { userRole = 'view'; setupAdminUI(); }
             else { alert("Invalid Password"); }
         };
+
 
         function setupAdminUI() {
             document.getElementById('adminModal').style.display = 'block';
