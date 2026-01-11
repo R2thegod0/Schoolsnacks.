@@ -2,249 +2,268 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SSA SNACKS STORE</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- SCRIPTS -->
+    <!-- LIBRARIES -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     
     <style>
-        /* --- THEME --- */
+        /* --- MASTER THEME --- */
         :root { 
-            --bg: #050505; --surface: #121212; --primary: #00ff9d; --accent: #d600ff; 
-            --text: #ffffff; --border: #333; --danger: #ff4444; --info: #29b6f6; --gold: #ffc107; 
-            --skeleton-base: #222; --skeleton-highlight: #333;
+            --bg: #09090b; --surface: #18181b; --surface-light: #27272a;
+            --primary: #00ff9d; --accent: #d946ef; --text: #ffffff; --text-muted: #a1a1aa;
+            --border: #3f3f46; --danger: #ef4444; --info: #0ea5e9; --gold: #eab308; 
+            --skeleton-base: #27272a; --skeleton-highlight: #3f3f46;
+            --glass: rgba(24, 24, 27, 0.85);
         }
         [data-theme="light"] { 
-            --bg: #f4f4f9; --surface: #ffffff; --primary: #00bf72; --accent: #b000d3; 
-            --text: #1a1a1a; --border: #ddd; --skeleton-base: #eee; --skeleton-highlight: #f5f5f5;
+            --bg: #f8fafc; --surface: #ffffff; --surface-light: #f1f5f9;
+            --primary: #10b981; --accent: #a855f7; --text: #0f172a; --text-muted: #64748b;
+            --border: #e2e8f0; --skeleton-base: #e2e8f0; --skeleton-highlight: #f1f5f9;
+            --glass: rgba(255, 255, 255, 0.9);
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; transition: 0.3s; scroll-behavior: smooth; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; transition: background 0.3s; }
         
-        /* Nav & Gamification */
-        nav { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
+        /* HEADER COMPONENTS */
+        .gamify-bar { background: var(--surface); padding: 10px 20px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .auth-btn { background: var(--surface-light); color: var(--text); border: 1px solid var(--border); padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: 0.2s; }
+        .auth-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .user-pic { width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; border: 1px solid var(--border); vertical-align: middle; }
         
-        .gamify-bar { background: #111; padding: 8px 20px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); color: #aaa; }
-        .auth-btn { background: #333; color: white; border: 1px solid #555; padding: 4px 12px; border-radius: 12px; cursor: pointer; font-size: 0.75rem; margin-left: 10px; }
-        .user-pic { width: 22px; height: 22px; border-radius: 50%; vertical-align: middle; margin-right: 5px; border: 1px solid #555; }
+        nav { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.3rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
         
-        .wallet-pill { background: rgba(0, 255, 157, 0.1); border: 1px solid var(--primary); color: var(--primary); padding: 2px 8px; border-radius: 10px; font-weight: bold; margin-right: 10px; cursor: pointer; }
+        /* CONTROLS */
+        .controls { padding: 20px 15px 10px; text-align: center; }
+        .search-input { width: 100%; max-width: 500px; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); outline: none; transition: 0.3s; font-size: 1rem; }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.1); }
+        
+        .filters { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; position: sticky; top: 68px; z-index: 90; padding: 10px 0; background: linear-gradient(180deg, var(--bg) 80%, transparent); }
+        .filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; font-weight: 600; }
+        .filter-btn.active { background: var(--primary); color: #000; border-color: var(--primary); transform: scale(1.05); }
 
-        .controls { padding: 15px; text-align: center; }
-        .search-input { width: 100%; max-width: 500px; padding: 12px 20px; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); color: var(--text); outline: none; transition: 0.3s; margin-bottom: 10px; }
-        
-        .color-dot { width: 20px; height: 20px; border-radius: 50%; display: inline-block; cursor: pointer; border: 2px solid #fff; margin: 0 5px; }
-
-        .filters { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; position: sticky; top: 65px; z-index: 90; background: var(--bg); padding: 5px 0; }
-        .filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
-        .filter-btn:hover, .filter-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(255,255,255,0.05); }
-
+        /* PRODUCT GRID */
         .container { max-width: 1000px; margin: 0 auto; padding: 10px; }
-        .category-section { margin-bottom: 30px; scroll-margin-top: 120px; }
-        .cat-title { font-size: 1.5rem; font-weight: bold; color: var(--primary); border-bottom: 1px solid var(--border); margin-bottom: 15px; padding-bottom: 5px; text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         
         .card { 
-            background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); 
-            display: flex; flex-direction: column; position: relative; transition: 0.1s; 
-            transform-style: preserve-3d; transform: perspective(1000px);
+            background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); 
+            display: flex; flex-direction: column; position: relative; transition: transform 0.1s;
+            transform-style: preserve-3d; transform: perspective(1000px); 
         }
-        .card:hover { border-color: var(--accent); }
         .card.sold-out { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; transform: translateZ(20px); }
+        .card img { width: 100%; height: 150px; object-fit: cover; transform: translateZ(10px); background: var(--surface-light); }
         
-        .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; transform: translateZ(20px); }
-        .card img { width: 100%; height: 140px; object-fit: cover; transform: translateZ(10px); }
-        .stock-bar { height: 4px; background: #333; margin: 8px 0; border-radius: 2px; overflow: hidden; }
-        .stock-fill { height: 100%; background: var(--primary); width: 100%; transition: 0.3s; }
-        .stock-fill.low { background: var(--danger); }
-        .price { color: var(--accent); font-weight: bold; font-size: 1.1rem; }
-        .add-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .add-btn:hover { background: var(--primary); border-color: var(--primary); color: #000; }
+        .price { color: var(--text); font-weight: 800; font-size: 1.1rem; }
+        .add-btn { background: var(--surface-light); border: 1px solid var(--border); color: var(--primary); padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-weight: 700; transition: 0.2s; }
+        .add-btn:hover { background: var(--primary); color: #000; }
 
-        .skeleton { background: var(--skeleton-base); border-radius: 12px; height: 250px; position: relative; overflow: hidden; }
-        .skeleton::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.05) 20%, rgba(255, 255, 255, 0.1) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        /* UI ELEMENTS */
+        .skeleton { background: var(--skeleton-base); border-radius: 16px; height: 260px; position: relative; overflow: hidden; }
+        .skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, transparent, var(--skeleton-highlight), transparent); animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
 
-        .floating-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, var(--primary), #00ccff); color: #000; padding: 15px 30px; border-radius: 30px; font-weight: bold; box-shadow: 0 0 20px rgba(0, 255, 157, 0.4); cursor: pointer; z-index: 99; display: none; width: 80%; max-width: 300px; text-align: center; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--surface); width: 95%; max-width: 800px; margin: 30px auto; padding: 25px; border-radius: 15px; border: 1px solid var(--border); color: var(--text); max-height: 90vh; overflow-y: auto; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: var(--text); border-radius: 6px; box-sizing: border-box; }
-        
-        /* ADMIN PANEL STYLES */
-        .tab-header { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 15px; overflow-x: auto; gap: 5px; }
-        .tab-btn { flex: 1; padding: 10px; cursor: pointer; text-align: center; opacity: 0.6; white-space: nowrap; border-radius: 5px 5px 0 0; background: rgba(255,255,255,0.05); }
-        .tab-btn.active { border-bottom: 2px solid var(--primary); opacity: 1; font-weight: bold; color: var(--primary); background: rgba(255,255,255,0.1); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
-        .inv-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
-        
-        .tip-opt { padding: 5px 10px; border: 1px solid var(--border); border-radius: 15px; cursor: pointer; margin-right: 5px; font-size: 0.9rem; }
-        .tip-opt.selected { background: var(--primary); color: black; border-color: var(--primary); }
+        .floating-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text); color: var(--bg); padding: 14px 25px; border-radius: 50px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.3); cursor: pointer; z-index: 99; width: 90%; max-width: 350px; display: flex; justify-content: space-between; align-items: center; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .floating-bar.visible { transform: translateX(-50%) translateY(0); }
 
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 300; left: 50%; bottom: 30px; transform: translateX(-50%); border: 1px solid var(--primary); }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 4.5s; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.2s; }
+        .modal.show { opacity: 1; display: block; }
+        .modal-content { background: var(--surface); width: 95%; max-width: 600px; margin: 5vh auto; padding: 25px; border-radius: 20px; border: 1px solid var(--border); color: var(--text); max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal.show .modal-content { transform: translateY(0); }
+        
+        input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 1rem; }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        #toastBox { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 300px; }
+        .toast { background: var(--surface); color: var(--text); padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; animation: slideUp 0.3s forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ADMIN & WALLET */
+        .tab-header { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { padding: 8px 16px; border-radius: 20px; background: var(--surface-light); color: var(--text-muted); cursor: pointer; white-space: nowrap; border: 1px solid transparent; }
+        .tab-btn.active { background: var(--primary); color: #000; font-weight: 700; }
+        .tab-content { display: none; } .tab-content.active { display: block; }
+        .admin-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        
+        .wallet-pill { background: rgba(0, 255, 157, 0.1); border: 1px solid var(--primary); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: bold; cursor: default; }
     </style>
 </head>
 <body>
-
+    <!-- TOP BAR -->
     <div class="gamify-bar">
         <div id="userDisplay">
-            <span id="walletSpan" class="wallet-pill" style="display:none;">👛 ₹<span id="walletBal">0</span></span>
-            <span>🪙 <span id="coinDisplay">0</span></span>
+            <span id="walletSpan" style="display:none; margin-right:10px;"><span class="wallet-pill">👛 ₹<span id="walletBal">0</span></span></span>
+            <span style="color:var(--gold); font-weight:bold;">🪙 <span id="coinDisplay">0</span></span>
         </div>
         <div id="authSection"><button class="auth-btn" onclick="googleLogin()">Login</button></div>
     </div>
 
+    <!-- NAVBAR -->
     <nav>
-        <div class="logo">SSA SNACKS STORE</div>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <div style="position:relative; display:inline-block;" onclick="toggleColorMenu()">
-                <i class="fas fa-paint-brush" style="cursor: pointer;"></i>
-                <div id="colorMenu" style="display:none; position:absolute; top:25px; right:0; background:#222; padding:10px; border-radius:10px; border:1px solid #444; width:120px;">
-                    <span class="color-dot" style="background:#00ff9d" onclick="setTheme('#00ff9d')"></span>
-                    <span class="color-dot" style="background:#00e5ff" onclick="setTheme('#00e5ff')"></span>
-                    <span class="color-dot" style="background:#ff00ff" onclick="setTheme('#ff00ff')"></span>
-                    <span class="color-dot" style="background:#ffc107" onclick="setTheme('#ffc107')"></span>
-                </div>
-            </div>
-            
-            <i class="fas fa-history" onclick="openHistory()" style="cursor: pointer;"></i>
-            
+        <div class="logo"><i class="fas fa-bolt"></i> SSA STORE</div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <i class="fas fa-palette" onclick="toggleColorMenu()" style="cursor: pointer; color: var(--text-muted);"></i>
+            <i class="fas fa-history" onclick="openHistory()" style="cursor: pointer; color: var(--text-muted);"></i>
             <div onclick="openCart()" style="position: relative; cursor: pointer;">
-                <div style="width:30px; height:30px;">
-                    <lottie-player src="https://assets10.lottiefiles.com/packages/lf20_tutvdkg0.json" background="transparent" speed="1" style="width: 100%; height: 100%;" hover loop></lottie-player>
-                </div>
-                <span id="cartCount" style="position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; font-size: 0.7rem; padding: 2px 5px; border-radius: 50%;">0</span>
+                <i class="fas fa-shopping-bag" style="font-size: 1.3rem;"></i>
+                <span id="cartCount" style="position: absolute; top: -5px; right: -8px; background: var(--danger); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--surface); display:none;">0</span>
             </div>
         </div>
     </nav>
 
+    <div id="colorMenu" style="display:none; position:fixed; top:60px; right:20px; background:var(--surface); padding:15px; border-radius:12px; border:1px solid var(--border); z-index:1100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="display:flex; gap:10px;">
+            <div onclick="setTheme('#00ff9d')" style="width:25px; height:25px; background:#00ff9d; border-radius:50%; cursor:pointer;"></div>
+            <div onclick="setTheme('#0ea5e9')" style="width:25px; height:25px; background:#0ea5e9; border-radius:50%; cursor:pointer;"></div>
+            <div onclick="setTheme('#d946ef')" style="width:25px; height:25px; background:#d946ef; border-radius:50%; cursor:pointer;"></div>
+            <div onclick="setTheme('#eab308')" style="width:25px; height:25px; background:#eab308; border-radius:50%; cursor:pointer;"></div>
+        </div>
+    </div>
+
+    <!-- APP CONTENT -->
     <div class="controls">
-        <input type="text" class="search-input" placeholder="Search snacks..." onkeyup="handleSearch(this.value)">
+        <div class="search-wrapper" style="position:relative; max-width:500px; margin:0 auto;">
+            <i class="fas fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
+            <input type="text" class="search-input" style="padding-left:40px;" placeholder="What are you craving?" onkeyup="handleSearch(this.value)">
+        </div>
         <div class="filters">
-            <button class="filter-btn" onclick="scrollToCat('eat')">🍟 Eat</button>
-            <button class="filter-btn" onclick="scrollToCat('drink')">🥤 Drink</button>
-            <button class="filter-btn" onclick="scrollToCat('combo')">🍱 Combo</button>
-            <button class="filter-btn" onclick="scrollToCat('gift')">🎁 Gifts</button>
+            <button class="filter-btn active" onclick="filterItems('all', this)">All</button>
+            <button class="filter-btn" onclick="filterItems('eat', this)">🍟 Eat</button>
+            <button class="filter-btn" onclick="filterItems('drink', this)">🥤 Drink</button>
+            <button class="filter-btn" onclick="filterItems('combo', this)">🍱 Combo</button>
+            <button class="filter-btn" onclick="filterItems('gift', this)">🎁 Gift</button>
         </div>
     </div>
+
     <div class="container" id="mainContainer">
-        <div id="skeletonLoader" class="grid"><div class="skeleton"></div><div class="skeleton"></div></div>
+        <div id="skeletonLoader" class="grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
         <div id="contentArea"></div>
-    </div>
-
-    <div class="floating-bar" id="floatBar" onclick="openCart()">View Cart • ₹<span id="floatTotal">0</span></div>
-
-    <!-- UPSELL MODAL -->
-    <div id="upsellModal" class="modal">
-        <div class="modal-content" style="text-align:center;">
-            <h2 style="color:var(--primary)">Thirsty? 🥤</h2>
-            <p>You have food but no drink!</p>
-            <div id="upsellItems" class="grid" style="margin-top:20px;"></div>
-            <button onclick="closeModal('upsellModal'); openCart();" style="margin-top:20px; background:#333; color:white; border:none; padding:10px 20px;">No, thanks</button>
+        <div id="emptyState" style="display:none; text-align:center; padding:50px; color:var(--text-muted);">
+            <i class="fas fa-cookie-bite" style="font-size:3rem; margin-bottom:10px;"></i><br>No snacks found.
         </div>
     </div>
+
+    <div class="floating-bar" id="floatBar" onclick="openCart()">
+        <span><i class="fas fa-shopping-bag"></i> <span id="floatCount">0</span> Items</span>
+        <span>₹<span id="floatTotal">0</span> <i class="fas fa-chevron-right" style="font-size:0.8rem;"></i></span>
+    </div>
+
+    <div id="toastBox"></div>
 
     <!-- CART MODAL -->
     <div id="cartModal" class="modal">
         <div class="modal-content">
-            <span onclick="closeModal('cartModal')" style="float:right; cursor:pointer; font-size:1.5rem;">&times;</span>
-            <h2>Checkout</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0;">Your Bag</h2>
+                <span onclick="closeModal('cartModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span>
+            </div>
+            
             <div id="cartList" style="margin-bottom:20px;"></div>
-            
-            <div style="margin-bottom:15px;">
-                <label>Tip the Runner:</label><br>
-                <span class="tip-opt selected" onclick="setTip(0, this)">None</span>
-                <span class="tip-opt" onclick="setTip(5, this)">₹5</span>
-                <span class="tip-opt" onclick="setTip(10, this)">₹10</span>
+            <div id="cartEmptyState" style="text-align:center; padding:30px; display:none; color:var(--text-muted);">Bag is empty</div>
+
+            <div style="background:var(--bg); padding:15px; border-radius:12px; border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:var(--text-muted); font-size:0.9rem;"><span>Subtotal</span><span>₹<span id="subTotal">0</span></span></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:var(--text-muted); font-size:0.9rem;"><span>Tip</span><span id="tipDisplay">₹0</span></div>
+                <div style="border-top:1px solid var(--border); padding-top:10px; display:flex; justify-content:space-between; font-weight:800; font-size:1.1rem;"><span>Total</span><span style="color:var(--primary);">₹<span id="finalTotal">0</span></span></div>
             </div>
 
-            <div style="border-top:1px solid #333; padding-top:10px; margin-top:10px; font-weight:bold; display:flex; justify-content:space-between;">
-                <span>Total:</span> <span style="color:var(--primary); font-size:1.2rem;">₹<span id="finalTotal">0</span></span>
+            <div style="margin:20px 0;">
+                <span style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">TIP RUNNER</span>
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <button class="auth-btn" onclick="setTip(0)">None</button>
+                    <button class="auth-btn" onclick="setTip(5)">₹5</button>
+                    <button class="auth-btn" onclick="setTip(10)">₹10</button>
+                </div>
             </div>
 
-            <input type="text" id="cName" placeholder="Name & Class"> <input type="text" id="cLoc" placeholder="Location">
-            <input type="number" id="cDist" placeholder="Distance (km)" step="0.1">
+            <input type="text" id="cName" placeholder="Name & Class (e.g. Rahul 10B)"> 
+            <input type="text" id="cLoc" placeholder="Delivery Location">
             
-            <h3 style="margin-top:20px;">Payment Method</h3>
+            <h3 style="margin-top:20px; font-size:1rem; color:var(--text-muted);">Payment</h3>
             <div style="display:flex; gap:10px;">
-                <button onclick="setPayMethod('cod')" id="btn-cod" style="flex:1; padding:10px; background:var(--primary); color:black; border:none; font-weight:bold;">💵 COD</button>
-                <button onclick="setPayMethod('wallet')" id="btn-wallet" style="flex:1; padding:10px; background:#333; color:white; border:1px solid #555;">👛 Wallet (₹<span id="btnWalletBal">0</span>)</button>
+                <button onclick="setPayMethod('cod')" id="btn-cod" style="flex:1; padding:12px; background:var(--primary); color:black; border:none; font-weight:bold; border-radius:8px; cursor:pointer;">💵 Cash</button>
+                <button onclick="setPayMethod('wallet')" id="btn-wallet" style="flex:1; padding:12px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; cursor:pointer;">👛 Wallet</button>
             </div>
 
-            <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%; background:var(--accent); border:none; padding:15px; font-weight:bold; cursor:pointer; margin-top:20px; color:white;">PLACE ORDER</button>
+            <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%; background:var(--text); color:var(--bg); border:none; padding:16px; font-weight:800; cursor:pointer; margin-top:20px; border-radius:12px;">PLACE ORDER</button>
         </div>
     </div>
 
-    <!-- PRODUCT MANAGER MODAL -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <span onclick="closeModal('productModal')" style="float:right; cursor:pointer;">&times;</span>
-            <h2 id="pmTitle">Add Product</h2>
-            <input type="hidden" id="pmId">
-            <input type="text" id="pmName" placeholder="Name">
-            <input type="number" id="pmPrice" placeholder="Price">
-            <input type="number" id="pmStock" placeholder="Stock">
-            <select id="pmCat"><option value="eat">Eat</option><option value="drink">Drink</option><option value="combo">Combo</option><option value="gift">Gift</option></select>
-            <input type="text" id="pmImg" placeholder="Image URL">
-            <button onclick="saveProduct()" style="width:100%; background:var(--primary); padding:10px; border:none; font-weight:bold; margin-top:10px;">SAVE</button>
-            <button id="pmDeleteBtn" onclick="deleteProduct()" style="width:100%; background:var(--danger); padding:10px; border:none; color:white; margin-top:5px; display:none;">DELETE</button>
+    <!-- UPSELL MODAL -->
+    <div id="upsellModal" class="modal">
+        <div class="modal-content" style="text-align:center; max-width:400px;">
+            <h2 style="color:var(--primary); margin-top:0;">Thirsty? 🥤</h2>
+            <p>You ordered food but no drink!</p>
+            <div id="upsellItems" class="grid" style="margin-top:20px;"></div>
+            <button onclick="closeModal('upsellModal'); openCart();" style="margin-top:20px; background:transparent; border:1px solid var(--border); padding:10px 20px; border-radius:20px; color:var(--text); cursor:pointer;">No, checkout</button>
         </div>
     </div>
 
     <!-- ADMIN MODAL -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width:900px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>🛠️ <span id="adminRoleDisplay">Staff</span> Panel</h2>
-                <span onclick="closeModal('adminModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0;">Dashboard <span id="roleBadge" style="font-size:0.7rem; background:var(--primary); color:black; padding:2px 6px; border-radius:4px;"></span></h2>
+                <i class="fas fa-times" onclick="closeModal('adminModal')" style="cursor:pointer; font-size:1.2rem;"></i>
             </div>
             
             <div class="tab-header">
                 <div class="tab-btn active" onclick="switchTab('orders')">Orders</div>
-                <div class="tab-btn" id="tabBtn-inv" onclick="switchTab('inventory')">Inventory</div>
+                <div class="tab-btn" id="tabBtn-inv" onclick="switchTab('inventory')">Items</div>
                 <div class="tab-btn" id="tabBtn-users" onclick="switchTab('users')">Users</div>
-                <div class="tab-btn" id="tabBtn-audit" onclick="switchTab('audit')">Logs</div>
-                <div class="tab-btn" id="tabBtn-owner" onclick="switchTab('owner')" style="display:none; color:var(--gold);">Owner</div>
+                <div class="tab-btn" id="tabBtn-owner" onclick="switchTab('owner')" style="color:var(--gold);">Security</div>
             </div>
 
             <div id="tab-orders" class="tab-content active"><div id="adminList"></div></div>
-            
-            <div id="tab-inventory" class="tab-content">
-                <button onclick="openProductManager()" style="width:100%; padding:10px; background:var(--primary); border:none; margin-bottom:10px;">+ Add Product</button>
-                <div id="inventoryList"></div>
-            </div>
-            
+            <div id="tab-inventory" class="tab-content"><button onclick="openProductManager()" class="add-btn" style="margin-bottom:15px; width:auto;">+ Add Product</button><div id="inventoryList"></div></div>
             <div id="tab-users" class="tab-content"><div id="usersList"></div></div>
-            <div id="tab-audit" class="tab-content"><div id="auditList"></div></div>
-            
             <div id="tab-owner" class="tab-content">
-                <h3 style="color:var(--gold)">Security</h3>
+                <h3 style="color:var(--gold)">Passwords</h3>
                 <input type="text" id="newOwnerPass" placeholder="New Owner Password">
-                <button onclick="updateSettings()" style="background:var(--gold); border:none; padding:5px; width:100%;">Update</button>
-                <br><br>
-                <button onclick="initSettings()" style="background:#333; color:#777; width:100%;">⚠️ Reset All Passwords to Default</button>
+                <button onclick="updateSettings()" class="add-btn" style="background:var(--gold); color:black;">Update</button>
+                <button onclick="initSettings()" class="auth-btn" style="width:100%; margin-top:20px;">⚠️ Reset Defaults</button>
             </div>
         </div>
     </div>
 
-    <div id="historyModal" class="modal"><div class="modal-content"><span onclick="closeModal('historyModal')" style="float:right; cursor:pointer;">&times;</span><h2>History</h2><div id="historyList"></div></div></div>
-    
-    <div style="text-align:center; padding:20px; opacity:0.3;"><span onclick="openAdmin()" style="cursor:pointer;">Staff Access</span></div>
-    <div id="toast">Notification</div>
+    <!-- PRODUCT MANAGER -->
+    <div id="productModal" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+            <h2>Manage Product</h2>
+            <input type="hidden" id="pmId">
+            <input type="text" id="pmName" placeholder="Product Name">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <input type="number" id="pmPrice" placeholder="Price">
+                <input type="number" id="pmStock" placeholder="Stock">
+            </div>
+            <select id="pmCat"><option value="eat">Eat</option><option value="drink">Drink</option><option value="combo">Combo</option><option value="gift">Gift</option></select>
+            <input type="text" id="pmImg" placeholder="Image URL">
+            <button onclick="saveProduct()" class="add-btn" style="background:var(--primary); color:black;">Save</button>
+            <button id="pmDeleteBtn" onclick="deleteProduct()" class="add-btn" style="background:var(--danger); color:white; display:none;">Delete</button>
+            <button onclick="closeModal('productModal')" class="auth-btn" style="width:100%; margin-top:10px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Order History</h2><i class="fas fa-times" onclick="closeModal('historyModal')" style="cursor:pointer;"></i></div>
+            <div id="historyList" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+    <div style="text-align:center; padding:30px; opacity:0.3;"><span onclick="openAdmin()" style="cursor:pointer; font-size:0.8rem;">Staff Access</span></div>
     <audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, query, orderBy, where, deleteDoc, getDocs, setDoc, getDoc } 
+        import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, query, orderBy, deleteDoc, getDoc, setDoc, where } 
         from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
         from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
@@ -265,34 +284,40 @@
         const provider = new GoogleAuthProvider();
 
         let products = []; let cart = []; let currentUser = null; let walletBalance = 0;
-        let tipAmount = 0; let payMethod = 'cod'; let isOrdering = false;
-        let userRole = 'none'; // 'view', 'staff', 'owner'
+        let tipAmount = 0; let payMethod = 'cod'; let userRole = 'none'; let currentFilter = 'all';
 
-        // --- UTILS ---
+        // --- UX UTILS ---
         window.toggleColorMenu = () => { const m=document.getElementById('colorMenu'); m.style.display = m.style.display==='block'?'none':'block'; }
         window.setTheme = (c) => { document.documentElement.style.setProperty('--primary', c); document.getElementById('colorMenu').style.display='none'; }
-        function showToast(m) { const t=document.getElementById("toast"); t.innerText=m; t.className="show"; setTimeout(()=>t.className="",3000); }
+        window.closeModal = (id) => { document.getElementById(id).classList.remove('show'); setTimeout(()=>document.getElementById(id).style.display='none', 200); }
+        function openModal(id) { const m=document.getElementById(id); m.style.display='block'; setTimeout(()=>m.classList.add('show'), 10); }
+        function showToast(msg, type='normal') {
+            const box = document.getElementById('toastBox');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-${type==='error'?'exclamation-circle':'check-circle'}" style="color:${type==='error'?'var(--danger)':'var(--primary)'}"></i> ${msg}`;
+            box.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
 
         // --- AUTH ---
-        window.googleLogin = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
+        window.googleLogin = () => signInWithPopup(auth, provider).catch(e => showToast(e.message, 'error'));
         onAuthStateChanged(auth, async (u) => {
-            const sec = document.getElementById('authSection');
             if (u) {
                 currentUser = u;
                 onSnapshot(doc(db, "users", u.uid), (docSnap) => {
                     const data = docSnap.data();
-                    if(data?.banned) { alert("🚫 BANNED"); signOut(auth); return; }
+                    if(data?.banned) { alert("Access Denied"); signOut(auth); return; }
                     walletBalance = data?.wallet || 0;
                     document.getElementById('walletBal').innerText = walletBalance;
-                    document.getElementById('btnWalletBal').innerText = walletBalance;
                     document.getElementById('walletSpan').style.display = 'inline-block';
-                    sec.innerHTML = `<img src="${u.photoURL}" class="user-pic"> ${u.displayName.split(' ')[0]}`;
+                    document.getElementById('authSection').innerHTML = `<img src="${u.photoURL}" class="user-pic">`;
                 });
                 await setDoc(doc(db, "users", u.uid), { name: u.displayName, email: u.email, photo: u.photoURL, lastLogin: new Date() }, { merge: true });
             } else { 
                 currentUser = null; walletBalance = 0;
                 document.getElementById('walletSpan').style.display = 'none';
-                sec.innerHTML = `<button class="auth-btn" onclick="googleLogin()">Login</button>`;
+                document.getElementById('authSection').innerHTML = `<button class="auth-btn" onclick="googleLogin()">Login</button>`;
             }
         });
 
@@ -301,230 +326,237 @@
             products = []; snap.forEach(doc => products.push({id: doc.id, ...doc.data()}));
             document.getElementById('skeletonLoader').style.display = 'none';
             renderContent();
-            if(document.getElementById('adminModal').style.display === 'block') renderInventory();
+            if(document.getElementById('adminModal').classList.contains('show')) renderInventory();
         });
 
         function renderContent(search = '') {
             const container = document.getElementById('contentArea'); container.innerHTML = "";
-            ['eat', 'drink', 'combo', 'gift'].forEach(cat => {
-                const items = products.filter(p => p.cat === cat && p.name.toLowerCase().includes(search));
-                if(items.length > 0) {
-                    const section = document.createElement('div'); section.className = 'category-section'; section.id = 'cat-'+cat;
-                    section.innerHTML = `<div class="cat-title">${cat}</div><div class="grid"></div>`;
-                    container.appendChild(section);
-                    const grid = section.querySelector('.grid');
-                    items.forEach(p => {
-                        const btn = p.stock > 0 ? `<button class="add-btn" onclick="window.addToCart('${p.id}')">ADD</button>` : `<button class="add-btn" disabled style="background:#333;">SOLD OUT</button>`;
-                        grid.innerHTML += `
-                            <div class="card ${p.stock<=0?'sold-out':''}" data-tilt data-tilt-max="10" data-tilt-speed="400">
-                                <img src="${p.img}" onerror="this.src='https://via.placeholder.com/150'">
-                                <div class="card-body">
-                                    <div><h3>${p.name}</h3><small>${p.stock} left</small></div>
-                                    <div class="price">₹${p.price}</div>${btn}
-                                </div>
-                            </div>`;
-                    });
-                }
+            let filtered = products.filter(p => (currentFilter==='all' || p.cat===currentFilter) && p.name.toLowerCase().includes(search));
+            
+            if(filtered.length === 0) { document.getElementById('emptyState').style.display = 'block'; return; }
+            document.getElementById('emptyState').style.display = 'none';
+
+            const grid = document.createElement('div'); grid.className = 'grid';
+            filtered.forEach(p => {
+                const btn = p.stock > 0 ? `<button class="add-btn" onclick="window.addToCart('${p.id}')">ADD</button>` : `<button class="add-btn" disabled style="background:#222; color:#555;">SOLD OUT</button>`;
+                grid.innerHTML += `
+                    <div class="card ${p.stock<=0?'sold-out':''}" data-tilt data-tilt-max="10" data-tilt-speed="400">
+                        <img src="${p.img}" onerror="this.src='https://via.placeholder.com/150?text=Snack'">
+                        <div class="card-body">
+                            <div><div class="price">₹${p.price}</div><div style="font-weight:600;">${p.name}</div><small style="color:var(--text-muted);">${p.stock} left</small></div>${btn}
+                        </div>
+                    </div>`;
             });
+            container.appendChild(grid);
             VanillaTilt.init(document.querySelectorAll(".card"));
         }
+
         window.handleSearch = (t) => renderContent(t.toLowerCase());
-        window.scrollToCat = (cat) => document.getElementById('cat-'+cat)?.scrollIntoView({ behavior: 'smooth' });
+        window.filterItems = (c, b) => { document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); currentFilter = c; renderContent(); };
 
         // --- CART ---
-        window.addToCart = (id) => { cart.push(products.find(x => x.id === id)); updateCart(); showToast("Added!"); };
-        window.setTip = (amt, el) => { tipAmount = amt; document.querySelectorAll('.tip-opt').forEach(x => x.classList.remove('selected')); el.classList.add('selected'); updateCart(); };
-        window.setPayMethod = (m) => { payMethod = m; document.getElementById('btn-cod').style.background = m==='cod' ? 'var(--primary)' : '#333'; document.getElementById('btn-cod').style.color = m==='cod' ? 'black' : 'white'; document.getElementById('btn-wallet').style.background = m==='wallet' ? 'var(--primary)' : '#333'; document.getElementById('btn-wallet').style.color = m==='wallet' ? 'black' : 'white'; };
+        window.addToCart = (id) => { 
+            cart.push(products.find(x => x.id === id)); updateCartUI(); showToast("Added to bag"); 
+            const badge = document.getElementById('cartCount');
+            badge.style.transform = "scale(1.5)"; setTimeout(()=>badge.style.transform="scale(1)", 200);
+        };
+        
+        window.setTip = (amt) => { tipAmount = amt; updateCartUI(); };
+        window.setPayMethod = (m) => { 
+            payMethod = m;
+            document.getElementById('btn-cod').style.background = m==='cod' ? 'var(--primary)' : 'var(--bg)';
+            document.getElementById('btn-cod').style.color = m==='cod' ? 'black' : 'var(--text)';
+            document.getElementById('btn-wallet').style.background = m==='wallet' ? 'var(--primary)' : 'var(--bg)';
+            document.getElementById('btn-wallet').style.color = m==='wallet' ? 'black' : 'var(--text)';
+        };
 
-        function updateCart() {
+        function updateCartUI() {
             document.getElementById('cartCount').innerText = cart.length;
-            const total = cart.reduce((a,b)=>a+b.price,0) + tipAmount;
-            document.getElementById('floatTotal').innerText = total;
-            document.getElementById('finalTotal').innerText = total;
-            document.getElementById('floatBar').style.display = cart.length?'block':'none';
+            document.getElementById('cartCount').style.display = cart.length?'block':'none';
+            const subtotal = cart.reduce((a,b)=>a+b.price,0);
+            document.getElementById('floatTotal').innerText = subtotal + tipAmount;
+            
+            const bar = document.getElementById('floatBar');
+            if(cart.length > 0) bar.classList.add('visible'); else bar.classList.remove('visible');
+
             const list = document.getElementById('cartList');
-            list.innerHTML = cart.map((item, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${item.name}</span><span>₹${item.price} <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="cart.splice(${i},1); updateCart()"></i></span></div>`).join('');
-            if(tipAmount > 0) list.innerHTML += `<div style="text-align:right; color:var(--info);">+ Tip: ₹${tipAmount}</div>`;
+            const empty = document.getElementById('cartEmptyState');
+            if(cart.length === 0) { list.innerHTML=''; empty.style.display='block'; }
+            else {
+                empty.style.display='none';
+                list.innerHTML = cart.map((item, i) => `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;"><img src="${item.img}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"><span>${item.name}</span></div>
+                        <span>₹${item.price} <i class="fas fa-trash" style="color:var(--danger); margin-left:10px; cursor:pointer;" onclick="cart.splice(${i},1); updateCartUI()"></i></span>
+                    </div>`).join('');
+            }
+            document.getElementById('subTotal').innerText = subtotal;
+            document.getElementById('tipDisplay').innerText = `₹${tipAmount}`;
+            document.getElementById('finalTotal').innerText = subtotal + tipAmount;
         }
 
         window.openCart = () => {
+             // Upsell
              const hasFood = cart.some(i => i.cat === 'eat'); const hasDrink = cart.some(i => i.cat === 'drink');
              if(hasFood && !hasDrink) {
                  const drinks = products.filter(p => p.cat === 'drink' && p.stock > 0).slice(0, 2);
                  if(drinks.length > 0) {
-                     document.getElementById('upsellItems').innerHTML = drinks.map(d => `<div class="card" onclick="window.addToCart('${d.id}'); closeModal('upsellModal'); openCart();"><img src="${d.img}" style="height:80px;"><div style="padding:5px; text-align:center;"><b>${d.name}</b><br>₹${d.price}</div></div>`).join('');
-                     document.getElementById('upsellModal').style.display='block'; return; 
+                     document.getElementById('upsellItems').innerHTML = drinks.map(d => `<div class="card" onclick="window.addToCart('${d.id}'); closeModal('upsellModal'); openCart();" style="cursor:pointer;"><img src="${d.img}" style="height:100px; object-fit:cover;"><div style="padding:10px; text-align:center;"><b>${d.name}</b><br>₹${d.price}</div></div>`).join('');
+                     openModal('upsellModal'); return; 
                  }
              }
-             document.getElementById('cartModal').style.display='block';
+             updateCartUI(); openModal('cartModal');
         };
 
         window.placeOrder = async () => {
-            if(isOrdering) return; isOrdering = true;
-            const name = document.getElementById('cName').value; const dist = parseFloat(document.getElementById('cDist').value);
-            if(!name || !dist) { isOrdering=false; return alert("Fill details"); }
+            const btn = document.getElementById('placeOrderBtn');
+            if(cart.length === 0) return showToast("Bag is empty", 'error');
+            const name = document.getElementById('cName').value;
+            const loc = document.getElementById('cLoc').value;
+            if(!name || !loc) return showToast("Please fill all details", 'error');
+            
             const total = cart.reduce((a,b)=>a+b.price,0) + tipAmount;
-
+            
             if(payMethod === 'wallet') {
-                if(!currentUser) { isOrdering=false; return alert("Login to use Wallet"); }
-                if(walletBalance < total) { isOrdering=false; return alert("Insufficient Wallet Balance!"); }
+                if(!currentUser) return showToast("Login to use Wallet", 'error');
+                if(walletBalance < total) return showToast("Insufficient Balance", 'error');
             }
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled = true;
 
             try {
                 if(payMethod === 'wallet') await updateDoc(doc(db, "users", currentUser.uid), { wallet: walletBalance - total });
+                
                 await addDoc(collection(db, "orders"), {
-                    customer: name, userId: currentUser ? currentUser.uid : null, location: document.getElementById('cLoc').value,
-                    distance: dist, items: cart.map(i=>i.name), total: total, tip: tipAmount, method: payMethod, status: 'Pending', timestamp: new Date()
+                    customer: name, userId: currentUser ? currentUser.uid : null, location: loc,
+                    items: cart.map(i=>i.name), total: total, tip: tipAmount, method: payMethod, status: 'Pending', timestamp: new Date()
                 });
+                
                 cart.forEach(async (i) => await updateDoc(doc(db, "products", i.id), { stock: i.stock - 1 }));
-                document.getElementById('successSound').play(); confetti({ particleCount: 150 });
-                cart = []; tipAmount = 0; closeModal('cartModal'); updateCart(); 
-            } catch(e) { alert(e.message); }
-            isOrdering = false;
+                
+                document.getElementById('successSound').play(); 
+                confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
+                cart = []; tipAmount = 0; updateCartUI(); closeModal('cartModal'); 
+                showToast("Order Placed! 🚀");
+                
+            } catch(e) { showToast(e.message, 'error'); }
+            btn.innerHTML = 'PLACE ORDER'; btn.disabled = false;
         };
 
-                // --- ADMIN CORE (UPDATED) ---
+        // --- HISTORY ---
+        window.openHistory = async () => {
+            if(!currentUser) return showToast("Login to see history", 'error');
+            openModal('historyModal');
+            const list = document.getElementById('historyList'); list.innerHTML = "Loading...";
+            
+            const q = query(collection(db, "orders"), where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snap) => {
+                if(snap.empty) { list.innerHTML = "No orders yet."; return; }
+                list.innerHTML = snap.docs.map(doc => {
+                    const d = doc.data();
+                    return `<div style="background:var(--surface-light); padding:15px; border-radius:12px; margin-bottom:10px; border-left:4px solid var(--primary);">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${d.timestamp.toDate().toLocaleDateString()}</span><span>₹${d.total}</span></div>
+                        <div style="color:var(--text-muted); font-size:0.9rem;">${d.items.join(', ')}</div>
+                        <div style="margin-top:5px; font-size:0.8rem; color:${d.status==='Delivered'?'var(--primary)':'var(--gold)'};">${d.status.toUpperCase()}</div>
+                    </div>`;
+                }).join('');
+            });
+        };
+
+        // --- ADMIN ---
         window.openAdmin = async () => {
             const pwd = prompt("Enter Password:");
-            
-            // 🚨 SECRET BACKDOOR FOR MOBILE
-            if (pwd === "reset-pass333$&") {
-                await initSettings(); // This resets passwords to owner123
-                return;
-            }
-
+            if (pwd === "reset-pass333$&") { await initSettings(); return; }
             let s = { ownerPass: 'owner123', staffPass: 'staff123', viewPass: 'view123' };
             const snap = await getDoc(doc(db, "settings", "config"));
             if(snap.exists()) s = { ...s, ...snap.data() }; 
-
             if (pwd === s.ownerPass) { userRole = 'owner'; setupAdminUI(); }
             else if (pwd === s.staffPass) { userRole = 'staff'; setupAdminUI(); }
             else if (pwd === s.viewPass) { userRole = 'view'; setupAdminUI(); }
-            else { alert("Invalid Password"); }
+            else { showToast("Invalid Password", 'error'); }
         };
 
-
         function setupAdminUI() {
-            document.getElementById('adminModal').style.display = 'block';
-            document.getElementById('adminRoleDisplay').innerText = userRole.toUpperCase();
-            
-            const show = (id) => document.getElementById(id).style.display='block';
+            openModal('adminModal');
+            document.getElementById('roleBadge').innerText = userRole.toUpperCase();
             const hide = (id) => document.getElementById(id).style.display='none';
-            
-            if(userRole === 'view') {
-                hide('tabBtn-inv'); hide('tabBtn-users'); hide('tabBtn-audit'); hide('tabBtn-owner');
-            } else if (userRole === 'staff') {
-                show('tabBtn-inv'); show('tabBtn-users'); hide('tabBtn-audit'); hide('tabBtn-owner');
-            } else {
-                show('tabBtn-inv'); show('tabBtn-users'); show('tabBtn-audit'); show('tabBtn-owner');
-            }
-            loadAdminData();
+            const show = (id) => document.getElementById(id).style.display='block';
+            if(userRole === 'view') { hide('tabBtn-inv'); hide('tabBtn-users'); hide('tabBtn-owner'); }
+            else if (userRole === 'staff') { show('tabBtn-inv'); show('tabBtn-users'); hide('tabBtn-owner'); }
+            else { show('tabBtn-inv'); show('tabBtn-users'); show('tabBtn-owner'); }
+            loadOrders();
         }
 
-        function loadAdminData() {
-            // Orders
+        function loadOrders() {
             onSnapshot(query(collection(db, "orders"), orderBy("timestamp", "desc")), (snap) => {
                  document.getElementById('adminList').innerHTML = snap.docs.filter(d=>d.data().status!=='Delivered').map(doc => {
                      const d = doc.data();
-                     const btnHtml = userRole === 'view' ? '' : `<br><button onclick="updateDoc(doc(db,'orders','${doc.id}'),{status:'Delivered'})">Mark Done</button>`;
-                     return `<div style="background:#222; padding:10px; margin-bottom:5px; border-left:4px solid ${d.method==='wallet'?'var(--gold)':'var(--primary)'};">
-                        <b>${d.customer}</b> - ₹${d.total} (${d.method.toUpperCase()}) ${d.tip>0?'+₹'+d.tip+' Tip':''}
-                        <br><small>${d.items.join(', ')}</small>
-                        ${btnHtml}
+                     return `<div class="admin-row" style="display:block; background:var(--surface-light); padding:15px; border-radius:10px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${d.customer}</span><span>₹${d.total}</span></div>
+                        <div style="color:var(--text-muted); font-size:0.9rem;">${d.items.join(', ')}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                            <span style="font-size:0.8rem;">📍 ${d.location}</span>
+                            ${userRole!=='view' ? `<button onclick="markDone('${doc.id}')" style="background:var(--primary); border:none; padding:5px 12px; border-radius:6px; cursor:pointer;">Done</button>` : ''}
+                        </div>
                      </div>`;
                  }).join('');
             });
-
-            if(userRole !== 'view') {
-                // Users
-                onSnapshot(collection(db, "users"), (snap) => {
-                    const list = document.getElementById('usersList'); list.innerHTML = "";
-                    snap.forEach(d => {
-                        const u = d.data();
-                        list.innerHTML += `
-                            <div class="user-row">
-                                <div style="display:flex; align-items:center;">
-                                    <img src="${u.photo}" class="user-pic"> <div><b>${u.name}</b><br><small>Bal: ₹${u.wallet||0}</small></div>
-                                </div>
-                                <div>
-                                    <button onclick="addFunds('${d.id}', '${u.name}', 50)" style="background:var(--primary); color:black; border:none; padding:5px;">+₹50</button>
-                                    <button onclick="banUser('${d.id}')" style="background:var(--danger); color:white; border:none; padding:5px;">🚫</button>
-                                </div>
-                            </div>`;
-                    });
-                });
-            }
-            
-            if(userRole === 'owner') {
-                onSnapshot(query(collection(db, "audit"), orderBy("timestamp", "desc"), limit(20)), (snap) => {
-                    document.getElementById('auditList').innerHTML = snap.docs.map(d => `<div style="padding:5px; border-bottom:1px solid #333; font-size:0.8rem;"><span style="color:var(--primary)">${d.data().action}</span>: ${d.data().details} <br><small>${d.data().by}</small></div>`).join('');
-                });
-            }
+            if(userRole !== 'view') loadUsers();
         }
+        window.markDone = async (id) => await updateDoc(doc(db,"orders",id),{status:'Delivered'});
 
-        // --- PRODUCT MANAGEMENT ---
+        // Inventory
         function renderInventory() {
             const list = document.getElementById('inventoryList'); list.innerHTML = "";
             products.forEach(p => {
-                list.innerHTML += `
-                    <div class="inv-row">
-                        <span><img src="${p.img}" style="width:30px; height:30px; margin-right:10px;">${p.name} (${p.stock})</span>
-                        <i class="fas fa-pen" style="color:var(--primary); cursor:pointer;" onclick="openProductManager('${p.id}')"></i>
-                    </div>`;
+                list.innerHTML += `<div class="admin-row">
+                    <div style="display:flex; align-items:center; gap:10px;"><img src="${p.img}" style="width:35px; height:35px; border-radius:6px; object-fit:cover;"> <span>${p.name} (${p.stock})</span></div>
+                    <i class="fas fa-pencil-alt" style="color:var(--primary); cursor:pointer;" onclick="openProductManager('${p.id}')"></i>
+                </div>`;
             });
         }
-
         window.openProductManager = (id=null) => {
-            document.getElementById('productModal').style.display='block';
+            openModal('productModal');
             if(id) {
                 const p = products.find(x=>x.id===id);
-                document.getElementById('pmTitle').innerText = "Edit";
                 document.getElementById('pmId').value = id; document.getElementById('pmName').value = p.name;
                 document.getElementById('pmPrice').value = p.price; document.getElementById('pmStock').value = p.stock;
                 document.getElementById('pmImg').value = p.img; document.getElementById('pmCat').value = p.cat;
                 document.getElementById('pmDeleteBtn').style.display='block';
             } else {
-                document.getElementById('pmTitle').innerText = "Add New";
                 document.getElementById('pmId').value = ""; document.getElementById('pmName').value = "";
                 document.getElementById('pmPrice').value = ""; document.getElementById('pmStock').value = 20;
                 document.getElementById('pmDeleteBtn').style.display='none';
             }
         };
-
         window.saveProduct = async () => {
             const id = document.getElementById('pmId').value;
-            const data = {
-                name: document.getElementById('pmName').value, price: parseInt(document.getElementById('pmPrice').value),
-                stock: parseInt(document.getElementById('pmStock').value), cat: document.getElementById('pmCat').value,
-                img: document.getElementById('pmImg').value
-            };
-            if(id) await updateDoc(doc(db, "products", id), data);
-            else await addDoc(collection(db, "products"), data);
-            closeModal('productModal');
+            const data = { name: document.getElementById('pmName').value, price: parseInt(document.getElementById('pmPrice').value), stock: parseInt(document.getElementById('pmStock').value), cat: document.getElementById('pmCat').value, img: document.getElementById('pmImg').value };
+            if(id) await updateDoc(doc(db, "products", id), data); else await addDoc(collection(db, "products"), data);
+            closeModal('productModal'); showToast("Saved");
         };
         window.deleteProduct = async () => { if(confirm("Delete?")) { await deleteDoc(doc(db, "products", document.getElementById('pmId').value)); closeModal('productModal'); } };
 
-        // --- ADMIN ACTIONS ---
-        window.addFunds = async (uid, name, amt) => {
-            if(confirm(`Add ₹${amt} to ${name}?`)) {
-                const userRef = doc(db, "users", uid);
-                const snap = await getDoc(userRef);
-                await updateDoc(userRef, { wallet: (snap.data().wallet||0) + amt });
-                logAction("Wallet Topup", `Added ₹${amt} to ${name}`);
-            }
-        };
-        window.banUser = async (uid) => { if(confirm("Ban Device?")) { await updateDoc(doc(db, "users", uid), { banned: true }); logAction("Ban", `Banned User ${uid}`); } };
-        async function logAction(action, details) { const by = currentUser ? currentUser.email : "Unknown"; await addDoc(collection(db, "audit"), { action, details, by, timestamp: new Date() }); }
+        // Users
+        function loadUsers() {
+            onSnapshot(collection(db, "users"), (snap) => {
+                document.getElementById('usersList').innerHTML = snap.docs.map(d => {
+                    const u = d.data();
+                    return `<div class="admin-row">
+                        <div style="display:flex; align-items:center;"><img src="${u.photo}" class="user-pic"> <div><b>${u.name}</b><br><small style="color:var(--primary);">₹${u.wallet||0}</small></div></div>
+                        <div><button onclick="addFunds('${d.id}', 50)" style="background:#333; color:white; border:1px solid #555; padding:5px 10px; cursor:pointer; margin-right:5px;">+₹50</button>
+                        <button onclick="banUser('${d.id}')" style="background:var(--danger); color:white; border:none; padding:5px 10px; cursor:pointer;">🚫</button></div>
+                    </div>`;
+                }).join('');
+            });
+        }
+        window.addFunds = async (uid, amt) => { if(confirm(`Add ₹${amt}?`)) { const r = doc(db, "users", uid); const s = await getDoc(r); await updateDoc(r, { wallet: (s.data().wallet||0) + amt }); showToast("Added"); } };
+        window.banUser = async (uid) => { if(confirm("Ban?")) { await updateDoc(doc(db, "users", uid), { banned: true }); showToast("Banned"); } };
 
-        window.updateSettings = async () => {
-            const p = document.getElementById('newOwnerPass').value;
-            if(p) { await setDoc(doc(db, "settings", "config"), { ownerPass: p }, { merge: true }); alert("Updated!"); }
-        };
-        window.initSettings = async () => { await setDoc(doc(db, "settings", "config"), { ownerPass: 'owner123', staffPass: 'staff123', viewPass: 'view123' }); alert("Passwords Reset to Default"); };
-
-        window.closeModal = (id) => document.getElementById(id).style.display='none';
+        // Utils
+        window.updateSettings = async () => { const p = document.getElementById('newOwnerPass').value; if(p) { await setDoc(doc(db, "settings", "config"), { ownerPass: p }, { merge: true }); showToast("Updated"); } };
+        window.initSettings = async () => { await setDoc(doc(db, "settings", "config"), { ownerPass: 'owner123', staffPass: 'staff123', viewPass: 'view123' }); showToast("Reset Complete"); };
         window.switchTab = (t) => { document.querySelectorAll('.tab-content').forEach(d=>d.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); event.target.classList.add('active'); };
-        window.openHistory = () => { document.getElementById('historyModal').style.display='block'; document.getElementById('historyList').innerText = "Login to see history"; }
     </script>
 </body>
 </html>
