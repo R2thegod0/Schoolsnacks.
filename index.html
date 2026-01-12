@@ -255,11 +255,14 @@
         </div>
     </div>
 
-    <!-- ADMIN DELIVERY MAP -->
+    <!-- ADMIN DELIVERY MAP MODAL -->
     <div id="adminMapModal" class="modal">
         <div class="modal-content" style="height:500px; display:flex; flex-direction:column;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3>Delivery Location</h3><span onclick="closeModal('adminMapModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span></div>
-            <div id="adminMapDiv" style="flex-grow:1;"></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <h3>Delivery Location</h3>
+                <span onclick="closeModal('adminMapModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span>
+            </div>
+            <div id="adminMapDiv" style="flex-grow:1; border-radius:12px;"></div>
         </div>
     </div>
 
@@ -322,9 +325,9 @@
         let payMethod = 'cod'; let userRole = 'none'; let currentFilter = 'all';
         let subTiers = []; let userSub = null; 
         
-        // V16 LOGIC
+        // V17 LOCATION LOGIC
         let deliveryMode = 'inside';
-        const SCHOOL_COORDS = [26.143452, 91.793472]; // GUWAHATI
+        const SCHOOL_COORDS = [26.143452, 91.793472]; 
         let map, marker, selectedDist = 0; let selectedCoords = null;
         let adminMap, adminMarker;
 
@@ -346,7 +349,7 @@
                     map.on('click', (e) => {
                         if(marker) map.removeLayer(marker);
                         marker = L.marker(e.latlng).addTo(map);
-                        selectedCoords = {lat: e.latlng.lat, lng: e.latlng.lng};
+                        selectedCoords = { lat: e.latlng.lat, lng: e.latlng.lng }; // Save Coords
                         const schoolLatLng = L.latLng(SCHOOL_COORDS[0], SCHOOL_COORDS[1]);
                         selectedDist = (schoolLatLng.distanceTo(e.latlng) / 1000).toFixed(2);
                     });
@@ -420,6 +423,7 @@
         function renderContent(search = '') {
             const container = document.getElementById('contentArea'); container.innerHTML = "";
             let filtered = products;
+            
             if(search.length > 1) {
                 const fuse = new Fuse(products, { keys: ['name', 'cat'], threshold: 0.3 });
                 filtered = fuse.search(search).map(r => r.item);
@@ -428,7 +432,8 @@
             if(filtered.length === 0) { document.getElementById('emptyState').style.display = 'block'; return; }
             document.getElementById('emptyState').style.display = 'none';
 
-            ['eat', 'drink', 'combo', 'gift'].forEach(cat => {
+            const cats = ['eat', 'drink', 'combo', 'gift'];
+            cats.forEach(cat => {
                 const items = filtered.filter(p => p.cat === cat);
                 if(items.length > 0) {
                     const section = document.createElement('div'); section.id = 'cat-'+cat; section.className='category-section';
@@ -507,7 +512,6 @@
             const btn = document.getElementById('placeOrderBtn');
             if(cart.length === 0) return showToast("Bag is empty", 'error');
             const name = document.getElementById('cName').value;
-            
             if(!name) return showToast("Please enter Name", 'error');
             
             let finalLocation = "", coords = null;
@@ -553,7 +557,7 @@
         window.openSubscriptions = () => {
             openModal('subModal');
             const list = document.getElementById('subList');
-            const publicTiers = subTiers.filter(t => !t.hidden); // Filter Hidden Tiers
+            const publicTiers = subTiers.filter(t => !t.hidden);
             if(publicTiers.length === 0) { list.innerHTML = "No active plans."; return; }
             list.innerHTML = publicTiers.map(t => `
                 <div class="sub-card ${userSub?.name === t.name ? 'active-plan' : ''}" onclick="buySubscription('${t.id}')">
@@ -618,13 +622,12 @@
             loadOrders();
         }
 
-        // V17: MAP IN ADMIN + WALLET INPUT
+        // V17: MAP IN ADMIN
         function loadOrders() {
             onSnapshot(query(collection(db, "orders"), orderBy("timestamp", "desc")), (snap) => {
                  document.getElementById('adminList').innerHTML = snap.docs.filter(d=>d.data().status!=='Delivered').map(doc => {
                      const d = doc.data();
                      const time = timeAgo(d.timestamp.toDate());
-                     // Show Map Button if coords exist
                      const mapBtn = d.coords ? `<button onclick="viewAdminMap(${d.coords.lat}, ${d.coords.lng})" style="background:var(--info); border:none; padding:5px 8px; border-radius:6px; cursor:pointer; color:white; margin-right:5px;">🗺️ Map</button>` : '';
                      
                      return `<div class="admin-row" style="display:block; background:var(--surface-light); padding:15px; border-radius:12px; margin-bottom:10px;">
@@ -656,19 +659,21 @@
         };
 
         window.markDone = async (id) => await updateDoc(doc(db,"orders",id),{status:'Delivered'});
-        function timeAgo(date) { /* Same as before */ const s=Math.floor((new Date()-date)/1000); return s<60?"Just now":Math.floor(s/60)+"m ago"; }
+        function timeAgo(date) { const s=Math.floor((new Date()-date)/1000); return s<60?"Just now":Math.floor(s/60)+"m ago"; }
 
-        function renderInventory() { /* Same */ const list=document.getElementById('inventoryList'); list.innerHTML=""; products.forEach(p=>{ list.innerHTML+=`<div class="admin-row"><div style="display:flex; align-items:center; gap:10px;"><img src="${p.img}" style="width:35px; height:35px; border-radius:6px;"><span>${p.name} (${p.stock})</span></div><i class="fas fa-pencil-alt" style="color:var(--primary); cursor:pointer;" onclick="openProductManager('${p.id}')"></i></div>`; }); }
+        function renderInventory() { const list=document.getElementById('inventoryList'); list.innerHTML=""; products.forEach(p=>{ list.innerHTML+=`<div class="admin-row"><div style="display:flex; align-items:center; gap:10px;"><img src="${p.img}" style="width:35px; height:35px; border-radius:6px;"><span>${p.name} (${p.stock})</span></div><i class="fas fa-pencil-alt" style="color:var(--primary); cursor:pointer;" onclick="openProductManager('${p.id}')"></i></div>`; }); }
         window.sortInventory = () => { products.sort((a,b) => a.stock - b.stock); renderInventory(); showToast("Sorted"); }
-        window.openProductManager = (id=null) => { /* Same as V16 */ openModal('productModal'); if(id){const p=products.find(x=>x.id===id); document.getElementById('pmId').value=id; document.getElementById('pmName').value=p.name; document.getElementById('pmPrice').value=p.price; document.getElementById('pmStock').value=p.stock; document.getElementById('pmImg').value=p.img; document.getElementById('pmCat').value=p.cat; document.getElementById('pmDeleteBtn').style.display='block';}else{document.getElementById('pmId').value=""; document.getElementById('pmName').value=""; document.getElementById('pmPrice').value=""; document.getElementById('pmStock').value=20; document.getElementById('pmDeleteBtn').style.display='none';} };
-        window.saveProduct = async () => { /* Same */ const id=document.getElementById('pmId').value; const data={name:document.getElementById('pmName').value, price:parseInt(document.getElementById('pmPrice').value), stock:parseInt(document.getElementById('pmStock').value), cat:document.getElementById('pmCat').value, img:document.getElementById('pmImg').value}; if(id)await updateDoc(doc(db,"products",id),data); else await addDoc(collection(db,"products"),data); closeModal('productModal'); showToast("Saved"); };
+        window.openProductManager = (id=null) => { openModal('productModal'); if(id){const p=products.find(x=>x.id===id); document.getElementById('pmId').value=id; document.getElementById('pmName').value=p.name; document.getElementById('pmPrice').value=p.price; document.getElementById('pmStock').value=p.stock; document.getElementById('pmImg').value=p.img; document.getElementById('pmCat').value=p.cat; document.getElementById('pmDeleteBtn').style.display='block';}else{document.getElementById('pmId').value=""; document.getElementById('pmName').value=""; document.getElementById('pmPrice').value=""; document.getElementById('pmStock').value=20; document.getElementById('pmDeleteBtn').style.display='none';} };
+        window.saveProduct = async () => { const id=document.getElementById('pmId').value; const data={name:document.getElementById('pmName').value, price:parseInt(document.getElementById('pmPrice').value), stock:parseInt(document.getElementById('pmStock').value), cat:document.getElementById('pmCat').value, img:document.getElementById('pmImg').value}; if(id)await updateDoc(doc(db,"products",id),data); else await addDoc(collection(db,"products"),data); closeModal('productModal'); showToast("Saved"); };
         window.deleteProduct = async () => { if(confirm("Delete?")) { await deleteDoc(doc(db, "products", document.getElementById('pmId').value)); closeModal('productModal'); } };
 
         function loadUsers() {
             onSnapshot(collection(db, "users"), (snap) => {
                 document.getElementById('usersList').innerHTML = snap.docs.map(d => {
                     const u = d.data();
+                    // V17.1: ASSIGN SUB LOGIC
                     const assignBtn = userRole === 'owner' ? `<button onclick="assignSub('${d.id}')" style="background:#333; color:white; border:1px solid #555; padding:5px; margin-left:5px;">Sub</button>` : '';
+                    
                     return `<div class="admin-row">
                         <div style="display:flex; align-items:center;"><img src="${u.photo}" class="user-pic"> <div><b>${u.name}</b><br><small style="color:var(--primary);">₹${u.wallet||0}</small></div></div>
                         <div style="display:flex; gap:5px; align-items:center;">
@@ -693,14 +698,21 @@
             }
         };
         
+        // V17.1: FIXED ASSIGN SUB
         window.assignSub = async (uid) => {
-            const tierName = prompt("Enter exact Subscription Name to assign:");
-            const tier = subTiers.find(t => t.name === tierName);
+            const names = subTiers.map(t => t.name + (t.hidden ? " [H]" : "")).join(", ");
+            const tierName = prompt(`Available: ${names}\n\nEnter Tier Name to assign:`);
+            if (!tierName) return;
+
+            const tier = subTiers.find(t => t.name.toLowerCase() === tierName.toLowerCase().trim());
+
             if(tier) {
                 const expiry = new Date(); expiry.setDate(expiry.getDate() + parseInt(tier.days));
-                await updateDoc(doc(db, "users", uid), { subscription: { name: tier.name, discount: tier.discount, freeDel: tier.freeDel, expiry: expiry.toISOString() } });
-                showToast("Assigned " + tierName);
-            } else { alert("Tier not found"); }
+                await updateDoc(doc(db, "users", uid), {
+                    subscription: { name: tier.name, discount: tier.discount, freeDel: tier.freeDel, expiry: expiry.toISOString() }
+                });
+                showToast("Assigned " + tier.name);
+            } else { alert("Tier not found. Check spelling."); }
         };
 
         window.banUser = async (uid) => { if(confirm("Ban?")) { await updateDoc(doc(db, "users", uid), { banned: true }); showToast("Banned"); } };
