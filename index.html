@@ -5,39 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SSA SNACKS STORE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
     <!-- LIBRARIES -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
     
     <style>
-        /* --- MASTER THEME --- */
+        /* --- THEME VARIABLES --- */
         :root { 
             --bg: #09090b; --surface: #18181b; --surface-light: #27272a;
             --primary: #00ff9d; --accent: #d946ef; --text: #ffffff; --text-muted: #a1a1aa;
             --border: #3f3f46; --danger: #ef4444; --info: #0ea5e9; --gold: #eab308; 
-            --skeleton-base: #27272a; --skeleton-highlight: #3f3f46;
             --glass: rgba(24, 24, 27, 0.85);
         }
         [data-theme="light"] { 
             --bg: #f8fafc; --surface: #ffffff; --surface-light: #f1f5f9;
             --primary: #10b981; --accent: #a855f7; --text: #0f172a; --text-muted: #64748b;
-            --border: #e2e8f0; --skeleton-base: #e2e8f0; --skeleton-highlight: #f1f5f9;
-            --glass: rgba(255, 255, 255, 0.9);
+            --border: #e2e8f0; --glass: rgba(255, 255, 255, 0.9);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; transition: background 0.3s; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; transition: background 0.3s; overflow-x: hidden; }
         
-        /* HEADER COMPONENTS */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        /* HEADER */
+        nav { background: var(--glass); backdrop-filter: blur(16px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.3rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        
         .gamify-bar { background: var(--surface); padding: 10px 20px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .auth-btn { background: var(--surface-light); color: var(--text); border: 1px solid var(--border); padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: 0.2s; }
-        .auth-btn:hover { border-color: var(--primary); color: var(--primary); }
         .user-pic { width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; border: 1px solid var(--border); vertical-align: middle; }
-        
-        nav { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.3rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
         
         /* CONTROLS */
         .controls { padding: 20px 15px 10px; text-align: center; }
@@ -48,24 +52,21 @@
         .filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; font-weight: 600; }
         .filter-btn.active { background: var(--primary); color: #000; border-color: var(--primary); transform: scale(1.05); }
 
-        /* PRODUCT GRID */
+        /* GRID */
         .container { max-width: 1000px; margin: 0 auto; padding: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .category-header { font-size: 1.2rem; font-weight: 800; margin: 30px 0 15px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid var(--accent); padding-left: 10px; scroll-margin-top: 140px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         
-        .card { 
-            background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); 
-            display: flex; flex-direction: column; position: relative; transition: transform 0.1s;
-            transform-style: preserve-3d; transform: perspective(1000px); 
-        }
+        .card { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; transition: transform 0.1s; transform-style: preserve-3d; transform: perspective(1000px); }
         .card.sold-out { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
         .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; transform: translateZ(20px); }
         .card img { width: 100%; height: 150px; object-fit: cover; transform: translateZ(10px); background: var(--surface-light); }
-        
         .price { color: var(--text); font-weight: 800; font-size: 1.1rem; }
         .add-btn { background: var(--surface-light); border: 1px solid var(--border); color: var(--primary); padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-weight: 700; transition: 0.2s; }
         .add-btn:hover { background: var(--primary); color: #000; }
 
-        /* UI ELEMENTS */
+        /* UTILS */
+        .fly-img { position: fixed; z-index: 9999; width: 50px; height: 50px; border-radius: 50%; object-fit: cover; pointer-events: none; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); opacity: 0.8; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .skeleton { background: var(--skeleton-base); border-radius: 16px; height: 260px; position: relative; overflow: hidden; }
         .skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, transparent, var(--skeleton-highlight), transparent); animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
@@ -79,36 +80,43 @@
         .modal.show .modal-content { transform: translateY(0); }
         
         input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 1rem; }
-        input:focus { outline: none; border-color: var(--primary); }
-
+        
         #toastBox { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 300px; }
         .toast { background: var(--surface); color: var(--text); padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; animation: slideUp 0.3s forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ADMIN & WALLET */
+        
+        /* ADMIN & MAP */
         .tab-header { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn { padding: 8px 16px; border-radius: 20px; background: var(--surface-light); color: var(--text-muted); cursor: pointer; white-space: nowrap; border: 1px solid transparent; }
         .tab-btn.active { background: var(--primary); color: #000; font-weight: 700; }
         .tab-content { display: none; } .tab-content.active { display: block; }
         .admin-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         
-        .wallet-pill { background: rgba(0, 255, 157, 0.1); border: 1px solid var(--primary); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: bold; cursor: default; }
+        #map { height: 300px; width: 100%; border-radius: 12px; margin-top: 10px; z-index: 1; }
+        .horizon-footer { text-align: center; padding: 40px 20px 100px; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
+        
+        /* SUBSCRIPTION CARD */
+        .sub-card { background: var(--surface-light); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; margin-bottom: 15px; }
+        .sub-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+        .sub-card.active-plan { border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(0,255,157,0.2); }
+        .sub-badge { position: absolute; top: 10px; right: 10px; background: var(--gold); color: black; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
-<body>
-    <!-- TOP BAR -->
+<body onload="loadCart()">
+    <div id="offlineBanner" style="position:fixed; top:0; width:100%; background:var(--danger); color:white; text-align:center; font-size:0.8rem; padding:2px; z-index:2000; display:none;">⚠️ You are offline</div>
+
     <div class="gamify-bar">
         <div id="userDisplay">
-            <span id="walletSpan" style="display:none; margin-right:10px;"><span class="wallet-pill">👛 ₹<span id="walletBal">0</span></span></span>
-            <span style="color:var(--gold); font-weight:bold;">🪙 <span id="coinDisplay">0</span></span>
+            <span id="walletSpan" style="display:none; color:var(--primary); margin-right:10px;">👛 ₹<span id="walletBal">0</span></span>
+            <span>🪙 <span id="coinDisplay">0</span></span>
         </div>
         <div id="authSection"><button class="auth-btn" onclick="googleLogin()">Login</button></div>
     </div>
 
-    <!-- NAVBAR -->
     <nav>
-        <div class="logo"><i class="fas fa-bolt"></i> SSA STORE</div>
-        <div style="display: flex; gap: 20px; align-items: center;">
+        <div class="logo"><i class="fas fa-bolt"></i> SSA SNACKS</div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <button onclick="openSubscriptions()" class="auth-btn" style="background:linear-gradient(45deg, var(--gold), #ffa500); color:black; border:none;">👑 Prime</button>
             <i class="fas fa-palette" onclick="toggleColorMenu()" style="cursor: pointer; color: var(--text-muted);"></i>
             <i class="fas fa-history" onclick="openHistory()" style="cursor: pointer; color: var(--text-muted);"></i>
             <div onclick="openCart()" style="position: relative; cursor: pointer;">
@@ -118,27 +126,19 @@
         </div>
     </nav>
 
-    <div id="colorMenu" style="display:none; position:fixed; top:60px; right:20px; background:var(--surface); padding:15px; border-radius:12px; border:1px solid var(--border); z-index:1100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-        <div style="display:flex; gap:10px;">
-            <div onclick="setTheme('#00ff9d')" style="width:25px; height:25px; background:#00ff9d; border-radius:50%; cursor:pointer;"></div>
-            <div onclick="setTheme('#0ea5e9')" style="width:25px; height:25px; background:#0ea5e9; border-radius:50%; cursor:pointer;"></div>
-            <div onclick="setTheme('#d946ef')" style="width:25px; height:25px; background:#d946ef; border-radius:50%; cursor:pointer;"></div>
-            <div onclick="setTheme('#eab308')" style="width:25px; height:25px; background:#eab308; border-radius:50%; cursor:pointer;"></div>
-        </div>
-    </div>
+    <div id="ptr" style="text-align:center; height:0; overflow:hidden; color:var(--text-muted); transition:0.3s;"><i class="fas fa-sync fa-spin"></i> Updating...</div>
 
-    <!-- APP CONTENT -->
     <div class="controls">
         <div class="search-wrapper" style="position:relative; max-width:500px; margin:0 auto;">
             <i class="fas fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
-            <input type="text" class="search-input" style="padding-left:40px;" placeholder="What are you craving?" onkeyup="handleSearch(this.value)">
+            <input type="text" class="search-input" placeholder="Search..." onkeyup="handleSearch(this.value)">
         </div>
         <div class="filters">
-            <button class="filter-btn active" onclick="filterItems('all', this)">All</button>
-            <button class="filter-btn" onclick="filterItems('eat', this)">🍟 Eat</button>
-            <button class="filter-btn" onclick="filterItems('drink', this)">🥤 Drink</button>
-            <button class="filter-btn" onclick="filterItems('combo', this)">🍱 Combo</button>
-            <button class="filter-btn" onclick="filterItems('gift', this)">🎁 Gift</button>
+            <button class="filter-btn active" onclick="scrollToCat('all', this)">All</button>
+            <button class="filter-btn" onclick="scrollToCat('eat', this)">🍟 Eat</button>
+            <button class="filter-btn" onclick="scrollToCat('drink', this)">🥤 Drink</button>
+            <button class="filter-btn" onclick="scrollToCat('combo', this)">🍱 Combo</button>
+            <button class="filter-btn" onclick="scrollToCat('gift', this)">🎁 Gift</button>
         </div>
     </div>
 
@@ -161,38 +161,51 @@
     <div id="cartModal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0;">Your Bag</h2>
+                <h2 style="margin:0;">Bag <span id="cartBadge" style="font-size:0.7rem; background:var(--gold); color:black; padding:2px 6px; border-radius:4px; display:none;">PRIME SAVINGS</span></h2>
                 <span onclick="closeModal('cartModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span>
             </div>
-            
             <div id="cartList" style="margin-bottom:20px;"></div>
-            <div id="cartEmptyState" style="text-align:center; padding:30px; display:none; color:var(--text-muted);">Bag is empty</div>
-
-            <div style="background:var(--bg); padding:15px; border-radius:12px; border:1px solid var(--border);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:var(--text-muted); font-size:0.9rem;"><span>Subtotal</span><span>₹<span id="subTotal">0</span></span></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:var(--text-muted); font-size:0.9rem;"><span>Tip</span><span id="tipDisplay">₹0</span></div>
-                <div style="border-top:1px solid var(--border); padding-top:10px; display:flex; justify-content:space-between; font-weight:800; font-size:1.1rem;"><span>Total</span><span style="color:var(--primary);">₹<span id="finalTotal">0</span></span></div>
-            </div>
-
-            <div style="margin:20px 0;">
-                <span style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">TIP RUNNER</span>
-                <div style="display:flex; gap:10px; margin-top:5px;">
-                    <button class="auth-btn" onclick="setTip(0)">None</button>
-                    <button class="auth-btn" onclick="setTip(5)">₹5</button>
-                    <button class="auth-btn" onclick="setTip(10)">₹10</button>
-                </div>
-            </div>
-
-            <input type="text" id="cName" placeholder="Name & Class (e.g. Rahul 10B)"> 
-            <input type="text" id="cLoc" placeholder="Delivery Location">
+            <div id="cartEmptyState" style="text-align:center; padding:30px; display:none; color:var(--text-muted);">Empty</div>
             
-            <h3 style="margin-top:20px; font-size:1rem; color:var(--text-muted);">Payment</h3>
-            <div style="display:flex; gap:10px;">
-                <button onclick="setPayMethod('cod')" id="btn-cod" style="flex:1; padding:12px; background:var(--primary); color:black; border:none; font-weight:bold; border-radius:8px; cursor:pointer;">💵 Cash</button>
-                <button onclick="setPayMethod('wallet')" id="btn-wallet" style="flex:1; padding:12px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; cursor:pointer;">👛 Wallet</button>
+            <div style="background:var(--bg); padding:15px; border-radius:12px; margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between;"><span>Total</span><span style="color:var(--primary); font-weight:bold;">₹<span id="finalTotal">0</span></span></div>
+            </div>
+
+            <input type="text" id="cName" placeholder="Name (e.g. Rahul 10B)"> 
+            
+            <div style="margin:10px 0;">
+                <button onclick="openMapPicker()" style="width:100%; padding:12px; background:var(--surface-light); border:1px solid var(--border); color:var(--info); border-radius:10px; cursor:pointer;"><i class="fas fa-map-marker-alt"></i> Set Location on Map</button>
+                <div id="locDisplay" style="font-size:0.8rem; color:var(--text-muted); margin-top:5px; text-align:center;">Distance: <span id="distDisplay">0</span> km</div>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="setPayMethod('cod')" id="btn-cod" style="flex:1; padding:12px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:bold;">Cash</button>
+                <button onclick="setPayMethod('wallet')" id="btn-wallet" style="flex:1; padding:12px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px;">Wallet (₹<span id="btnWalletBal">0</span>)</button>
             </div>
 
             <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%; background:var(--text); color:var(--bg); border:none; padding:16px; font-weight:800; cursor:pointer; margin-top:20px; border-radius:12px;">PLACE ORDER</button>
+        </div>
+    </div>
+
+    <!-- MAP MODAL -->
+    <div id="mapModal" class="modal">
+        <div class="modal-content" style="height:500px; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <h3>📍 Tap your location</h3>
+                <span onclick="closeModal('mapModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span>
+            </div>
+            <div id="map" style="flex-grow:1;"></div>
+            <button onclick="confirmLocation()" style="width:100%; background:var(--primary); border:none; padding:15px; margin-top:10px; border-radius:10px; font-weight:bold; color:black;">Confirm Location</button>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTION MODAL -->
+    <div id="subModal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeModal('subModal')" style="float:right; cursor:pointer;">&times;</span>
+            <h2>👑 Prime Memberships</h2>
+            <p style="color:var(--text-muted);">Get exclusive discounts & free delivery!</p>
+            <div id="subList" style="display:grid; gap:15px; margin-top:20px;"></div>
         </div>
     </div>
 
@@ -205,29 +218,50 @@
             <button onclick="closeModal('upsellModal'); openCart();" style="margin-top:20px; background:transparent; border:1px solid var(--border); padding:10px 20px; border-radius:20px; color:var(--text); cursor:pointer;">No, checkout</button>
         </div>
     </div>
-
     <!-- ADMIN MODAL -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width:900px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0;">Dashboard <span id="roleBadge" style="font-size:0.7rem; background:var(--primary); color:black; padding:2px 6px; border-radius:4px;"></span></h2>
-                <i class="fas fa-times" onclick="closeModal('adminModal')" style="cursor:pointer; font-size:1.2rem;"></i>
+                <h2 style="margin:0;">Admin <span id="roleBadge" style="font-size:0.7rem; background:var(--primary); color:black; padding:2px 6px; border-radius:4px;"></span></h2>
+                <i class="fas fa-times" onclick="closeModal('adminModal')" style="cursor:pointer;"></i>
             </div>
-            
             <div class="tab-header">
                 <div class="tab-btn active" onclick="switchTab('orders')">Orders</div>
                 <div class="tab-btn" id="tabBtn-inv" onclick="switchTab('inventory')">Items</div>
                 <div class="tab-btn" id="tabBtn-users" onclick="switchTab('users')">Users</div>
-                <div class="tab-btn" id="tabBtn-owner" onclick="switchTab('owner')" style="color:var(--gold);">Security</div>
+                <div class="tab-btn" id="tabBtn-owner" onclick="switchTab('owner')" style="color:var(--gold);">Owner</div>
             </div>
-
-            <div id="tab-orders" class="tab-content active"><div id="adminList"></div></div>
-            <div id="tab-inventory" class="tab-content"><button onclick="openProductManager()" class="add-btn" style="margin-bottom:15px; width:auto;">+ Add Product</button><div id="inventoryList"></div></div>
+            
+            <div id="tab-orders" class="tab-content active"><input type="text" placeholder="Search..." style="margin-bottom:10px;" onkeyup="filterOrders(this.value)"><div id="adminList"></div></div>
+            
+            <div id="tab-inventory" class="tab-content">
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <button onclick="openProductManager()" class="add-btn" style="width:auto; margin:0;">+ Add Product</button>
+                    <button onclick="sortInventory()" class="auth-btn">Sort Low Stock</button>
+                </div>
+                <div id="inventoryList"></div>
+            </div>
+            
             <div id="tab-users" class="tab-content"><div id="usersList"></div></div>
+            
             <div id="tab-owner" class="tab-content">
-                <h3 style="color:var(--gold)">Passwords</h3>
-                <input type="text" id="newOwnerPass" placeholder="New Owner Password">
-                <button onclick="updateSettings()" class="add-btn" style="background:var(--gold); color:black;">Update</button>
+                <!-- SUBSCRIPTION MANAGER -->
+                <div style="background:rgba(255,215,0,0.1); padding:15px; border-radius:10px; margin-bottom:20px;">
+                    <h3 style="color:var(--gold);">Manage Subscriptions</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <input type="text" id="subName" placeholder="Name (e.g. Gold)">
+                        <input type="number" id="subPrice" placeholder="Price (₹)">
+                        <input type="number" id="subDur" placeholder="Days (e.g. 30)">
+                        <input type="number" id="subDisc" placeholder="Discount %">
+                    </div>
+                    <label style="color:var(--text-muted); font-size:0.9rem;"><input type="checkbox" id="subFreeDel"> Free Delivery?</label>
+                    <button onclick="addSubscriptionTier()" class="add-btn" style="margin-top:10px;">Add Tier</button>
+                    <div id="adminSubList" style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px;"></div>
+                </div>
+
+                <h3 style="color:var(--text-muted);">Security</h3>
+                <input type="text" id="newOwnerPass" placeholder="New Password">
+                <button onclick="updateSettings()" class="add-btn">Update</button>
                 <button onclick="initSettings()" class="auth-btn" style="width:100%; margin-top:20px;">⚠️ Reset Defaults</button>
             </div>
         </div>
@@ -236,31 +270,36 @@
     <!-- PRODUCT MANAGER -->
     <div id="productModal" class="modal">
         <div class="modal-content" style="max-width:400px;">
-            <h2>Manage Product</h2>
+            <h2>Product</h2>
             <input type="hidden" id="pmId">
-            <input type="text" id="pmName" placeholder="Product Name">
+            <input type="text" id="pmName" placeholder="Name">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <input type="number" id="pmPrice" placeholder="Price">
                 <input type="number" id="pmStock" placeholder="Stock">
             </div>
             <select id="pmCat"><option value="eat">Eat</option><option value="drink">Drink</option><option value="combo">Combo</option><option value="gift">Gift</option></select>
             <input type="text" id="pmImg" placeholder="Image URL">
-            <button onclick="saveProduct()" class="add-btn" style="background:var(--primary); color:black;">Save</button>
+            <button onclick="saveProduct()" class="add-btn">Save</button>
             <button id="pmDeleteBtn" onclick="deleteProduct()" class="add-btn" style="background:var(--danger); color:white; display:none;">Delete</button>
-            <button onclick="closeModal('productModal')" class="auth-btn" style="width:100%; margin-top:10px;">Cancel</button>
         </div>
     </div>
 
-    <!-- HISTORY MODAL -->
-    <div id="historyModal" class="modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Order History</h2><i class="fas fa-times" onclick="closeModal('historyModal')" style="cursor:pointer;"></i></div>
-            <div id="historyList" style="margin-top:15px;"></div>
+    <div id="historyModal" class="modal"><div class="modal-content"><span onclick="closeModal('historyModal')" style="float:right; cursor:pointer;">&times;</span><h2>History</h2><div id="historyList"></div></div></div>
+    
+    <div id="colorMenu" style="display:none; position:fixed; top:60px; right:20px; background:var(--surface); padding:15px; border-radius:12px; border:1px solid var(--border); z-index:1100;">
+        <div style="display:flex; gap:10px;">
+            <div onclick="setTheme('#00ff9d')" class="color-dot" style="background:#00ff9d;"></div>
+            <div onclick="setTheme('#0ea5e9')" class="color-dot" style="background:#0ea5e9;"></div>
+            <div onclick="setTheme('#d946ef')" class="color-dot" style="background:#d946ef;"></div>
+            <div onclick="setTheme('#eab308')" class="color-dot" style="background:#eab308;"></div>
         </div>
     </div>
 
-    <div style="text-align:center; padding:30px; opacity:0.3;"><span onclick="openAdmin()" style="cursor:pointer; font-size:0.8rem;">Staff Access</span></div>
+    <div class="horizon-footer">Made by <span>Horizon Studios</span></div>
+    
+    <div style="text-align:center; padding:10px; opacity:0.3;"><span onclick="openAdmin()" style="cursor:pointer; font-size:0.8rem;">Staff Access</span></div>
     <audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, query, orderBy, deleteDoc, getDoc, setDoc, where } 
@@ -284,7 +323,35 @@
         const provider = new GoogleAuthProvider();
 
         let products = []; let cart = []; let currentUser = null; let walletBalance = 0;
-        let tipAmount = 0; let payMethod = 'cod'; let userRole = 'none'; let currentFilter = 'all';
+        let payMethod = 'cod'; let userRole = 'none'; let currentFilter = 'all';
+        let subTiers = []; let userSub = null; 
+
+        // --- MAP LOGIC (GUWAHATI) ---
+        const SCHOOL_COORDS = [26.143452, 91.793472]; 
+        let map, marker, selectedDist = 0;
+
+        window.openMapPicker = () => {
+            openModal('mapModal');
+            setTimeout(() => {
+                if(!map) {
+                    map = L.map('map').setView(SCHOOL_COORDS, 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    L.marker(SCHOOL_COORDS).addTo(map).bindPopup("<b>School</b>").openPopup();
+                    map.on('click', (e) => {
+                        if(marker) map.removeLayer(marker);
+                        marker = L.marker(e.latlng).addTo(map);
+                        const schoolLatLng = L.latLng(SCHOOL_COORDS[0], SCHOOL_COORDS[1]);
+                        selectedDist = (schoolLatLng.distanceTo(e.latlng) / 1000).toFixed(2);
+                    });
+                }
+                map.invalidateSize();
+            }, 300);
+        };
+        window.confirmLocation = () => {
+            if(selectedDist > 2.0) return showToast(`Distance ${selectedDist}km is too far!`, 'error');
+            document.getElementById('distDisplay').innerText = selectedDist;
+            closeModal('mapModal');
+        };
 
         // --- UX UTILS ---
         window.toggleColorMenu = () => { const m=document.getElementById('colorMenu'); m.style.display = m.style.display==='block'?'none':'block'; }
@@ -299,8 +366,10 @@
             box.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
+        window.addEventListener('offline', () => document.getElementById('offlineBanner').style.display='block');
+        window.addEventListener('online', () => document.getElementById('offlineBanner').style.display='none');
 
-        // --- AUTH ---
+        // --- AUTH & DATA ---
         window.googleLogin = () => signInWithPopup(auth, provider).catch(e => showToast(e.message, 'error'));
         onAuthStateChanged(auth, async (u) => {
             if (u) {
@@ -309,19 +378,24 @@
                     const data = docSnap.data();
                     if(data?.banned) { alert("Access Denied"); signOut(auth); return; }
                     walletBalance = data?.wallet || 0;
+                    userSub = data?.subscription || null;
                     document.getElementById('walletBal').innerText = walletBalance;
+                    document.getElementById('btnWalletBal').innerText = walletBalance;
                     document.getElementById('walletSpan').style.display = 'inline-block';
                     document.getElementById('authSection').innerHTML = `<img src="${u.photoURL}" class="user-pic">`;
+                    if(userSub && new Date(userSub.expiry) > new Date()) {
+                        document.getElementById('cartBadge').style.display = 'inline-block';
+                        document.getElementById('cartBadge').innerText = userSub.name + " MEMBER";
+                    }
                 });
                 await setDoc(doc(db, "users", u.uid), { name: u.displayName, email: u.email, photo: u.photoURL, lastLogin: new Date() }, { merge: true });
             } else { 
-                currentUser = null; walletBalance = 0;
+                currentUser = null; walletBalance = 0; userSub = null;
                 document.getElementById('walletSpan').style.display = 'none';
                 document.getElementById('authSection').innerHTML = `<button class="auth-btn" onclick="googleLogin()">Login</button>`;
             }
         });
 
-        // --- DATA ---
         onSnapshot(collection(db, "products"), (snap) => {
             products = []; snap.forEach(doc => products.push({id: doc.id, ...doc.data()}));
             document.getElementById('skeletonLoader').style.display = 'none';
@@ -329,39 +403,62 @@
             if(document.getElementById('adminModal').classList.contains('show')) renderInventory();
         });
 
+        onSnapshot(collection(db, "tiers"), (snap) => {
+            subTiers = []; snap.forEach(doc => subTiers.push({id: doc.id, ...doc.data()}));
+            renderAdminSubs();
+        });
+
+        window.loadCart = () => { const saved = localStorage.getItem('ssa_cart'); if(saved) { cart = JSON.parse(saved); updateCartUI(); } }
+
+        // --- RENDER SHOP ---
         function renderContent(search = '') {
             const container = document.getElementById('contentArea'); container.innerHTML = "";
-            let filtered = products.filter(p => (currentFilter==='all' || p.cat===currentFilter) && p.name.toLowerCase().includes(search));
+            let filtered = products;
             
+            if(search.length > 1) {
+                const fuse = new Fuse(products, { keys: ['name', 'cat'], threshold: 0.3 });
+                filtered = fuse.search(search).map(r => r.item);
+            } else { filtered = products.filter(p => (currentFilter==='all' || p.cat===currentFilter)); }
+
             if(filtered.length === 0) { document.getElementById('emptyState').style.display = 'block'; return; }
             document.getElementById('emptyState').style.display = 'none';
 
-            const grid = document.createElement('div'); grid.className = 'grid';
-            filtered.forEach(p => {
-                const btn = p.stock > 0 ? `<button class="add-btn" onclick="window.addToCart('${p.id}')">ADD</button>` : `<button class="add-btn" disabled style="background:#222; color:#555;">SOLD OUT</button>`;
-                grid.innerHTML += `
-                    <div class="card ${p.stock<=0?'sold-out':''}" data-tilt data-tilt-max="10" data-tilt-speed="400">
-                        <img src="${p.img}" onerror="this.src='https://via.placeholder.com/150?text=Snack'">
-                        <div class="card-body">
-                            <div><div class="price">₹${p.price}</div><div style="font-weight:600;">${p.name}</div><small style="color:var(--text-muted);">${p.stock} left</small></div>${btn}
-                        </div>
-                    </div>`;
+            const cats = ['eat', 'drink', 'combo', 'gift'];
+            cats.forEach(cat => {
+                const items = filtered.filter(p => p.cat === cat);
+                if(items.length > 0) {
+                    const section = document.createElement('div'); section.id = 'cat-'+cat; section.className='category-section';
+                    section.innerHTML = `<div class="category-header">${cat}</div><div class="grid"></div>`;
+                    container.appendChild(section);
+                    const grid = section.querySelector('.grid');
+                    items.forEach(p => {
+                        const imgUrl = p.img || 'https://via.placeholder.com/150';
+                        const btn = p.stock > 0 ? `<button class="add-btn" onclick="window.addToCart('${p.id}', this)">ADD</button>` : `<button class="add-btn" disabled style="background:#222; color:#555;">SOLD OUT</button>`;
+                        const stockMsg = p.stock < 5 && p.stock > 0 ? `<span class="stock-text low">${p.stock} LEFT!</span>` : `<span class="stock-text">${p.stock} left</span>`;
+                        grid.innerHTML += `<div class="card ${p.stock<=0?'sold-out':''}" data-tilt><img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'"><div class="card-body"><div><div class="price">₹${p.price}</div><div style="font-weight:600;">${p.name}</div>${stockMsg}</div>${btn}</div></div>`;
+                    });
+                }
             });
-            container.appendChild(grid);
             VanillaTilt.init(document.querySelectorAll(".card"));
         }
 
         window.handleSearch = (t) => renderContent(t.toLowerCase());
-        window.filterItems = (c, b) => { document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); currentFilter = c; renderContent(); };
+        window.scrollToCat = (c, b) => { document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); currentFilter=c; renderContent(); if(c !== 'all') document.getElementById('cat-'+c)?.scrollIntoView({ behavior: 'smooth' }); };
 
         // --- CART ---
-        window.addToCart = (id) => { 
+        window.addToCart = (id, btnElement) => { 
             cart.push(products.find(x => x.id === id)); updateCartUI(); showToast("Added to bag"); 
-            const badge = document.getElementById('cartCount');
-            badge.style.transform = "scale(1.5)"; setTimeout(()=>badge.style.transform="scale(1)", 200);
+            if(btnElement) {
+                const img = btnElement.closest('.card').querySelector('img');
+                const flyer = img.cloneNode(); flyer.className = 'fly-img';
+                const rect = img.getBoundingClientRect(); const cartRect = document.querySelector('.fa-shopping-bag').getBoundingClientRect();
+                flyer.style.top = rect.top + 'px'; flyer.style.left = rect.left + 'px';
+                document.body.appendChild(flyer);
+                setTimeout(() => { flyer.style.top = cartRect.top + 'px'; flyer.style.left = cartRect.left + 'px'; flyer.style.width = '10px'; flyer.style.height = '10px'; flyer.style.opacity = '0'; }, 10);
+                setTimeout(() => flyer.remove(), 800);
+            }
         };
         
-        window.setTip = (amt) => { tipAmount = amt; updateCartUI(); };
         window.setPayMethod = (m) => { 
             payMethod = m;
             document.getElementById('btn-cod').style.background = m==='cod' ? 'var(--primary)' : 'var(--bg)';
@@ -371,37 +468,31 @@
         };
 
         function updateCartUI() {
+            localStorage.setItem('ssa_cart', JSON.stringify(cart));
             document.getElementById('cartCount').innerText = cart.length;
             document.getElementById('cartCount').style.display = cart.length?'block':'none';
-            const subtotal = cart.reduce((a,b)=>a+b.price,0);
-            document.getElementById('floatTotal').innerText = subtotal + tipAmount;
-            
+            let subtotal = cart.reduce((a,b)=>a+b.price,0);
+            if(userSub && new Date(userSub.expiry) > new Date()) subtotal = subtotal * ((100 - userSub.discount) / 100);
+            subtotal = Math.floor(subtotal);
+            document.getElementById('floatTotal').innerText = subtotal;
+            document.getElementById('floatCount').innerText = cart.length;
             const bar = document.getElementById('floatBar');
             if(cart.length > 0) bar.classList.add('visible'); else bar.classList.remove('visible');
-
             const list = document.getElementById('cartList');
-            const empty = document.getElementById('cartEmptyState');
-            if(cart.length === 0) { list.innerHTML=''; empty.style.display='block'; }
+            if(cart.length === 0) { list.innerHTML=''; document.getElementById('cartEmptyState').style.display='block'; }
             else {
-                empty.style.display='none';
-                list.innerHTML = cart.map((item, i) => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;">
-                        <div style="display:flex; align-items:center; gap:10px;"><img src="${item.img}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"><span>${item.name}</span></div>
-                        <span>₹${item.price} <i class="fas fa-trash" style="color:var(--danger); margin-left:10px; cursor:pointer;" onclick="cart.splice(${i},1); updateCartUI()"></i></span>
-                    </div>`).join('');
+                document.getElementById('cartEmptyState').style.display='none';
+                list.innerHTML = cart.map((item, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;"><div style="display:flex; align-items:center; gap:10px;"><img src="${item.img}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;"><span>${item.name}</span></div><span>₹${item.price} <i class="fas fa-trash" style="color:var(--danger); margin-left:10px; cursor:pointer;" onclick="cart.splice(${i},1); updateCartUI()"></i></span></div>`).join('');
             }
-            document.getElementById('subTotal').innerText = subtotal;
-            document.getElementById('tipDisplay').innerText = `₹${tipAmount}`;
-            document.getElementById('finalTotal').innerText = subtotal + tipAmount;
+            document.getElementById('finalTotal').innerText = subtotal;
         }
 
         window.openCart = () => {
-             // Upsell
              const hasFood = cart.some(i => i.cat === 'eat'); const hasDrink = cart.some(i => i.cat === 'drink');
              if(hasFood && !hasDrink) {
                  const drinks = products.filter(p => p.cat === 'drink' && p.stock > 0).slice(0, 2);
                  if(drinks.length > 0) {
-                     document.getElementById('upsellItems').innerHTML = drinks.map(d => `<div class="card" onclick="window.addToCart('${d.id}'); closeModal('upsellModal'); openCart();" style="cursor:pointer;"><img src="${d.img}" style="height:100px; object-fit:cover;"><div style="padding:10px; text-align:center;"><b>${d.name}</b><br>₹${d.price}</div></div>`).join('');
+                     document.getElementById('upsellItems').innerHTML = drinks.map(d => `<div class="card" onclick="window.addToCart('${d.id}'); closeModal('upsellModal'); openCart();" style="cursor:pointer;"><img src="${d.img}" style="height:80px;"><div style="padding:10px; text-align:center;"><b>${d.name}</b><br>₹${d.price}</div></div>`).join('');
                      openModal('upsellModal'); return; 
                  }
              }
@@ -412,14 +503,15 @@
             const btn = document.getElementById('placeOrderBtn');
             if(cart.length === 0) return showToast("Bag is empty", 'error');
             const name = document.getElementById('cName').value;
-            const loc = document.getElementById('cLoc').value;
-            if(!name || !loc) return showToast("Please fill all details", 'error');
             
-            const total = cart.reduce((a,b)=>a+b.price,0) + tipAmount;
+            if(!name) return showToast("Please enter Name", 'error');
+            if(selectedDist === 0) return showToast("Pick Location on Map", 'error');
+            
+            let total = parseInt(document.getElementById('finalTotal').innerText);
             
             if(payMethod === 'wallet') {
                 if(!currentUser) return showToast("Login to use Wallet", 'error');
-                if(walletBalance < total) return showToast("Insufficient Balance", 'error');
+                if(walletBalance < total) return showToast("Low Balance", 'error');
             }
 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled = true;
@@ -428,44 +520,65 @@
                 if(payMethod === 'wallet') await updateDoc(doc(db, "users", currentUser.uid), { wallet: walletBalance - total });
                 
                 await addDoc(collection(db, "orders"), {
-                    customer: name, userId: currentUser ? currentUser.uid : null, location: loc,
-                    items: cart.map(i=>i.name), total: total, tip: tipAmount, method: payMethod, status: 'Pending', timestamp: new Date()
+                    customer: name, userId: currentUser ? currentUser.uid : null, location: "Map (" + selectedDist + "km)",
+                    items: cart.map(i=>i.name), total: total, method: payMethod, status: 'Pending', timestamp: new Date()
                 });
                 
                 cart.forEach(async (i) => await updateDoc(doc(db, "products", i.id), { stock: i.stock - 1 }));
                 
                 document.getElementById('successSound').play(); 
                 confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
-                cart = []; tipAmount = 0; updateCartUI(); closeModal('cartModal'); 
+                cart = []; localStorage.removeItem('ssa_cart'); updateCartUI(); closeModal('cartModal'); 
                 showToast("Order Placed! 🚀");
-                
             } catch(e) { showToast(e.message, 'error'); }
             btn.innerHTML = 'PLACE ORDER'; btn.disabled = false;
         };
-
-        // --- HISTORY ---
-        window.openHistory = async () => {
-            if(!currentUser) return showToast("Login to see history", 'error');
-            openModal('historyModal');
-            const list = document.getElementById('historyList'); list.innerHTML = "Loading...";
-            
-            const q = query(collection(db, "orders"), where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
-            onSnapshot(q, (snap) => {
-                if(snap.empty) { list.innerHTML = "No orders yet."; return; }
-                list.innerHTML = snap.docs.map(doc => {
-                    const d = doc.data();
-                    return `<div style="background:var(--surface-light); padding:15px; border-radius:12px; margin-bottom:10px; border-left:4px solid var(--primary);">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${d.timestamp.toDate().toLocaleDateString()}</span><span>₹${d.total}</span></div>
-                        <div style="color:var(--text-muted); font-size:0.9rem;">${d.items.join(', ')}</div>
-                        <div style="margin-top:5px; font-size:0.8rem; color:${d.status==='Delivered'?'var(--primary)':'var(--gold)'};">${d.status.toUpperCase()}</div>
-                    </div>`;
-                }).join('');
-            });
+        // --- SUBSCRIPTIONS ---
+        window.openSubscriptions = () => {
+            openModal('subModal');
+            const list = document.getElementById('subList');
+            if(subTiers.length === 0) { list.innerHTML = "No active plans."; return; }
+            list.innerHTML = subTiers.map(t => `
+                <div class="sub-card ${userSub?.name === t.name ? 'active-plan' : ''}" onclick="buySubscription('${t.id}')">
+                    <div class="sub-badge">${t.discount}% OFF</div>
+                    <h3 style="color:var(--primary)">${t.name}</h3>
+                    <h1 style="margin:10px 0;">₹${t.price} <small style="font-size:1rem;color:var(--text-muted)">/${t.days}d</small></h1>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">${t.freeDel ? '✅ Free Delivery' : '❌ Standard Delivery'}</p>
+                    <button class="add-btn" style="background:var(--primary); color:black;">${userSub?.name === t.name ? 'Active' : 'Buy Now'}</button>
+                </div>
+            `).join('');
         };
+
+        window.buySubscription = async (tierId) => {
+            if(!currentUser) return showToast("Login Required", 'error');
+            const tier = subTiers.find(t => t.id === tierId);
+            if(walletBalance < tier.price) return showToast("Insufficient Wallet Balance", 'error');
+            if(confirm(`Buy ${tier.name} for ₹${tier.price}?`)) {
+                const expiry = new Date(); expiry.setDate(expiry.getDate() + parseInt(tier.days));
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    wallet: walletBalance - tier.price,
+                    subscription: { name: tier.name, discount: tier.discount, freeDel: tier.freeDel, expiry: expiry.toISOString() }
+                });
+                showToast("Welcome to " + tier.name + "!"); closeModal('subModal'); confetti({ particleCount: 150 });
+            }
+        };
+
+        window.addSubscriptionTier = async () => {
+            const name = document.getElementById('subName').value;
+            const price = parseInt(document.getElementById('subPrice').value);
+            const days = parseInt(document.getElementById('subDur').value);
+            const disc = parseInt(document.getElementById('subDisc').value);
+            const freeDel = document.getElementById('subFreeDel').checked;
+            if(name && price) { await addDoc(collection(db, "tiers"), { name, price, days, discount: disc, freeDel }); showToast("Tier Added"); }
+        };
+
+        function renderAdminSubs() {
+            document.getElementById('adminSubList').innerHTML = subTiers.map(t => `<div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #333; font-size:0.8rem;"><span>${t.name} (₹${t.price})</span><i class="fas fa-trash" style="color:var(--danger); cursor:pointer;" onclick="deleteDoc(doc(db,'tiers','${t.id}'))"></i></div>`).join('');
+        }
 
         // --- ADMIN ---
         window.openAdmin = async () => {
-            const pwd = prompt("Enter Password:");
+            const pwd = prompt("Password:");
             if (pwd === "reset-pass333$&") { await initSettings(); return; }
             let s = { ownerPass: 'owner123', staffPass: 'staff123', viewPass: 'view123' };
             const snap = await getDoc(doc(db, "settings", "config"));
@@ -473,7 +586,7 @@
             if (pwd === s.ownerPass) { userRole = 'owner'; setupAdminUI(); }
             else if (pwd === s.staffPass) { userRole = 'staff'; setupAdminUI(); }
             else if (pwd === s.viewPass) { userRole = 'view'; setupAdminUI(); }
-            else { showToast("Invalid Password", 'error'); }
+            else { showToast("Invalid", 'error'); }
         };
 
         function setupAdminUI() {
@@ -483,7 +596,7 @@
             const show = (id) => document.getElementById(id).style.display='block';
             if(userRole === 'view') { hide('tabBtn-inv'); hide('tabBtn-users'); hide('tabBtn-owner'); }
             else if (userRole === 'staff') { show('tabBtn-inv'); show('tabBtn-users'); hide('tabBtn-owner'); }
-            else { show('tabBtn-inv'); show('tabBtn-users'); show('tabBtn-owner'); }
+            else { show('tabBtn-inv'); show('tabBtn-users'); show('tabBtn-owner'); renderAdminSubs(); }
             loadOrders();
         }
 
@@ -491,30 +604,37 @@
             onSnapshot(query(collection(db, "orders"), orderBy("timestamp", "desc")), (snap) => {
                  document.getElementById('adminList').innerHTML = snap.docs.filter(d=>d.data().status!=='Delivered').map(doc => {
                      const d = doc.data();
-                     return `<div class="admin-row" style="display:block; background:var(--surface-light); padding:15px; border-radius:10px; margin-bottom:10px;">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${d.customer}</span><span>₹${d.total}</span></div>
-                        <div style="color:var(--text-muted); font-size:0.9rem;">${d.items.join(', ')}</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                            <span style="font-size:0.8rem;">📍 ${d.location}</span>
-                            ${userRole!=='view' ? `<button onclick="markDone('${doc.id}')" style="background:var(--primary); border:none; padding:5px 12px; border-radius:6px; cursor:pointer;">Done</button>` : ''}
-                        </div>
+                     const time = timeAgo(d.timestamp.toDate());
+                     return `<div class="admin-row" style="display:block; background:var(--surface-light); padding:15px; border-radius:12px; margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between;"><b>${d.customer}</b><span>₹${d.total}</span></div>
+                        <div style="color:var(--text-muted); font-size:0.9rem;">${d.items.join(', ')} • ${time}</div>
+                        <div style="display:flex; justify-content:space-between; margin-top:10px;"><span style="font-size:0.8rem;">📍 ${d.location}</span>${userRole!=='view' ? `<button onclick="markDone('${doc.id}')" style="background:var(--primary); padding:5px 12px; border:none; border-radius:6px; cursor:pointer;">Done</button>` : ''}</div>
                      </div>`;
                  }).join('');
             });
             if(userRole !== 'view') loadUsers();
         }
         window.markDone = async (id) => await updateDoc(doc(db,"orders",id),{status:'Delivered'});
+        
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return "Just now";
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return minutes + "m ago";
+            return Math.floor(minutes / 60) + "h ago";
+        }
 
-        // Inventory
         function renderInventory() {
             const list = document.getElementById('inventoryList'); list.innerHTML = "";
             products.forEach(p => {
                 list.innerHTML += `<div class="admin-row">
-                    <div style="display:flex; align-items:center; gap:10px;"><img src="${p.img}" style="width:35px; height:35px; border-radius:6px; object-fit:cover;"> <span>${p.name} (${p.stock})</span></div>
+                    <div style="display:flex; align-items:center; gap:10px;"><img src="${p.img}" style="width:35px; height:35px; border-radius:6px;"> <span>${p.name} (${p.stock})</span></div>
                     <i class="fas fa-pencil-alt" style="color:var(--primary); cursor:pointer;" onclick="openProductManager('${p.id}')"></i>
                 </div>`;
             });
         }
+        window.sortInventory = () => { products.sort((a,b) => a.stock - b.stock); renderInventory(); showToast("Sorted"); }
+
         window.openProductManager = (id=null) => {
             openModal('productModal');
             if(id) {
@@ -537,7 +657,6 @@
         };
         window.deleteProduct = async () => { if(confirm("Delete?")) { await deleteDoc(doc(db, "products", document.getElementById('pmId').value)); closeModal('productModal'); } };
 
-        // Users
         function loadUsers() {
             onSnapshot(collection(db, "users"), (snap) => {
                 document.getElementById('usersList').innerHTML = snap.docs.map(d => {
@@ -553,10 +672,32 @@
         window.addFunds = async (uid, amt) => { if(confirm(`Add ₹${amt}?`)) { const r = doc(db, "users", uid); const s = await getDoc(r); await updateDoc(r, { wallet: (s.data().wallet||0) + amt }); showToast("Added"); } };
         window.banUser = async (uid) => { if(confirm("Ban?")) { await updateDoc(doc(db, "users", uid), { banned: true }); showToast("Banned"); } };
 
-        // Utils
         window.updateSettings = async () => { const p = document.getElementById('newOwnerPass').value; if(p) { await setDoc(doc(db, "settings", "config"), { ownerPass: p }, { merge: true }); showToast("Updated"); } };
         window.initSettings = async () => { await setDoc(doc(db, "settings", "config"), { ownerPass: 'owner123', staffPass: 'staff123', viewPass: 'view123' }); showToast("Reset Complete"); };
         window.switchTab = (t) => { document.querySelectorAll('.tab-content').forEach(d=>d.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); event.target.classList.add('active'); };
+        
+        window.openHistory = () => { 
+            if(!currentUser) return showToast("Login required", 'error');
+            openModal('historyModal');
+            const list = document.getElementById('historyList'); list.innerHTML = "Loading...";
+            const q = query(collection(db, "orders"), where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snap) => {
+                if(snap.empty) { list.innerHTML = "No orders yet."; return; }
+                list.innerHTML = snap.docs.map(doc => {
+                    const d = doc.data();
+                    const time = timeAgo(d.timestamp.toDate());
+                    return `<div style="background:var(--surface-light); padding:15px; border-radius:12px; margin-bottom:10px; border-left:4px solid var(--primary);">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${d.timestamp.toDate().toLocaleDateString()}</span><span>₹${d.total}</span></div>
+                        <div style="color:var(--text-muted); font-size:0.9rem;">${d.items.join(', ')}</div>
+                        <div style="margin-top:5px; font-size:0.8rem; color:${d.status==='Delivered'?'var(--primary)':'var(--gold)'};">${d.status.toUpperCase()}</div>
+                    </div>`;
+                }).join('');
+            });
+        }
+        window.filterOrders = (txt) => {
+            const rows = document.querySelectorAll('#adminList .admin-row');
+            rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(txt.toLowerCase()) ? 'block' : 'none');
+        }
     </script>
 </body>
 </html>
