@@ -15,10 +15,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.6.2/fuse.min.js"></script>
     
     <style>
-        /* --- THEME VARIABLES --- */
+        /* --- THEME --- */
         :root { 
             --bg: #09090b; --surface: #18181b; --surface-light: #27272a;
-            --primary: #00ff9d; --accent: #d946ef; --text: #ffffff; --text-muted: #a1a1aa;
+            --primary: #00ff9d; --accent: #d600ff; --text: #ffffff; --text-muted: #a1a1aa;
             --border: #3f3f46; --danger: #ef4444; --info: #0ea5e9; --gold: #eab308; 
             --glass: rgba(24, 24, 27, 0.85);
         }
@@ -35,7 +35,6 @@
         ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
-        /* HEADER */
         nav { background: var(--glass); backdrop-filter: blur(16px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 1.3rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
         
@@ -43,7 +42,6 @@
         .auth-btn { background: var(--surface-light); color: var(--text); border: 1px solid var(--border); padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: 0.2s; }
         .user-pic { width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; border: 1px solid var(--border); vertical-align: middle; }
         
-        /* CONTROLS */
         .controls { padding: 20px 15px 10px; text-align: center; }
         .search-input { width: 100%; max-width: 500px; padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); outline: none; transition: 0.3s; font-size: 1rem; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.1); }
@@ -52,7 +50,6 @@
         .filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; font-weight: 600; }
         .filter-btn.active { background: var(--primary); color: #000; border-color: var(--primary); transform: scale(1.05); }
 
-        /* GRID */
         .container { max-width: 1000px; margin: 0 auto; padding: 10px; }
         .category-header { font-size: 1.2rem; font-weight: 800; margin: 30px 0 15px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid var(--accent); padding-left: 10px; scroll-margin-top: 140px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
@@ -65,8 +62,11 @@
         .add-btn { background: var(--surface-light); border: 1px solid var(--border); color: var(--primary); padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-weight: 700; transition: 0.2s; }
         .add-btn:hover { background: var(--primary); color: #000; }
 
-        /* UTILS */
-        .fly-img { position: fixed; z-index: 9999; width: 50px; height: 50px; border-radius: 50%; object-fit: cover; pointer-events: none; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); opacity: 0.8; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .sub-card { background: var(--surface-light); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; margin-bottom: 15px; }
+        .sub-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+        .sub-card.active-plan { border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(0,255,157,0.2); }
+        .sub-badge { position: absolute; top: 10px; right: 10px; background: var(--gold); color: black; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        
         .skeleton { background: var(--skeleton-base); border-radius: 16px; height: 260px; position: relative; overflow: hidden; }
         .skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, transparent, var(--skeleton-highlight), transparent); animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 100% { transform: translateX(100%); } }
@@ -81,25 +81,29 @@
         
         input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 1rem; }
         
+        .ticker-wrap { position: fixed; bottom: 0; width: 100%; background: var(--primary); color: #000; overflow: hidden; height: 25px; line-height: 25px; z-index: 80; font-size: 0.8rem; font-weight: bold; }
+        .ticker { display: inline-block; white-space: nowrap; padding-left: 100%; animation: ticker 20s linear infinite; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        
         #toastBox { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 4000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 300px; }
         .toast { background: var(--surface); color: var(--text); padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; animation: slideUp 0.3s forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* ADMIN & MAP */
         .tab-header { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn { padding: 8px 16px; border-radius: 20px; background: var(--surface-light); color: var(--text-muted); cursor: pointer; white-space: nowrap; border: 1px solid transparent; }
         .tab-btn.active { background: var(--primary); color: #000; font-weight: 700; }
         .tab-content { display: none; } .tab-content.active { display: block; }
         .admin-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         
-        #map { height: 300px; width: 100%; border-radius: 12px; margin-top: 10px; z-index: 1; }
+        #map { height: 250px; width: 100%; border-radius: 12px; margin-top: 10px; z-index: 1; }
         .horizon-footer { text-align: center; padding: 40px 20px 100px; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; }
         
-        /* SUBSCRIPTION CARD */
-        .sub-card { background: var(--surface-light); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; margin-bottom: 15px; }
-        .sub-card:hover { transform: translateY(-5px); border-color: var(--gold); }
-        .sub-card.active-plan { border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(0,255,157,0.2); }
-        .sub-badge { position: absolute; top: 10px; right: 10px; background: var(--gold); color: black; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        /* NEW LOCATION SWITCHER UI */
+        .del-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .del-card { border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; opacity: 0.6; color: var(--text-muted); }
+        .del-card:hover { background: var(--surface-light); }
+        .del-card.active { border-color: var(--primary); background: rgba(0, 255, 157, 0.1); opacity: 1; font-weight: bold; color: var(--primary); box-shadow: 0 0 10px rgba(0, 255, 157, 0.1); }
+        .del-card i { font-size: 1.5rem; margin-bottom: 5px; }
     </style>
 </head>
 <body onload="loadCart()">
@@ -150,6 +154,8 @@
         </div>
     </div>
 
+    <div class="ticker-wrap"><div class="ticker" id="liveTicker">🔥 Trending: Spicy Lays is selling fast! • Welcome to SSA Snacks • Order now!</div></div>
+
     <div class="floating-bar" id="floatBar" onclick="openCart()">
         <span><i class="fas fa-shopping-bag"></i> <span id="floatCount">0</span> Items</span>
         <span>₹<span id="floatTotal">0</span> <i class="fas fa-chevron-right" style="font-size:0.8rem;"></i></span>
@@ -157,28 +163,48 @@
 
     <div id="toastBox"></div>
 
-    <!-- CART MODAL -->
+    <!-- CART MODAL (V16 REDESIGN) -->
     <div id="cartModal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0;">Bag <span id="cartBadge" style="font-size:0.7rem; background:var(--gold); color:black; padding:2px 6px; border-radius:4px; display:none;">PRIME SAVINGS</span></h2>
+                <h2 style="margin:0;">Bag <span id="cartBadge" style="font-size:0.7rem; background:var(--gold); color:black; padding:2px 6px; border-radius:4px; display:none;">PRIME</span></h2>
                 <span onclick="closeModal('cartModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span>
             </div>
+            
             <div id="cartList" style="margin-bottom:20px;"></div>
             <div id="cartEmptyState" style="text-align:center; padding:30px; display:none; color:var(--text-muted);">Empty</div>
             
-            <div style="background:var(--bg); padding:15px; border-radius:12px; margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between;"><span>Total</span><span style="color:var(--primary); font-weight:bold;">₹<span id="finalTotal">0</span></span></div>
+            <input type="text" id="cName" placeholder="Your Name (e.g. Rahul)">
+            
+            <!-- BLINKIT STYLE LOCATION -->
+            <h3 style="font-size:0.9rem; color:var(--text-muted); margin-top:20px;">DELIVERY TYPE</h3>
+            
+            <div class="del-type-grid">
+                <div class="del-card active" onclick="setDelType('inside')" id="btn-inside">
+                    <i class="fas fa-school"></i><br>Inside School
+                </div>
+                <div class="del-card" onclick="setDelType('outside')" id="btn-outside">
+                    <i class="fas fa-motorcycle"></i><br>Outside Delivery
+                </div>
             </div>
 
-            <input type="text" id="cName" placeholder="Name (e.g. Rahul 10B)"> 
-            
-            <div style="margin:10px 0;">
-                <button onclick="openMapPicker()" style="width:100%; padding:12px; background:var(--surface-light); border:1px solid var(--border); color:var(--info); border-radius:10px; cursor:pointer;"><i class="fas fa-map-marker-alt"></i> Set Location on Map</button>
-                <div id="locDisplay" style="font-size:0.8rem; color:var(--text-muted); margin-top:5px; text-align:center;">Distance: <span id="distDisplay">0</span> km</div>
+            <!-- Inside: Room Input -->
+            <div id="insideSec">
+                <input type="text" id="cRoom" placeholder="Exact Spot (e.g. Class 10B, Library)">
+            </div>
+
+            <!-- Outside: Map & House No -->
+            <div id="outsideSec" style="display:none;">
+                <button onclick="openMapPicker()" style="width:100%; padding:12px; background:var(--surface-light); border:1px solid var(--border); color:var(--info); border-radius:10px; cursor:pointer; margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> Set Location on Map</button>
+                <div id="locDisplay" style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-bottom:10px;">Distance: <span id="distDisplay">0</span> km</div>
+                <input type="text" id="cHouse" placeholder="House No / Landmark">
+            </div>
+
+            <div style="background:var(--bg); padding:15px; border-radius:12px; margin-bottom:20px; margin-top:20px;">
+                <div style="display:flex; justify-content:space-between;"><span>Total</span><span style="color:var(--primary); font-weight:bold;">₹<span id="finalTotal">0</span></span></div>
             </div>
             
-            <div style="display:flex; gap:10px; margin-top:20px;">
+            <div style="display:flex; gap:10px;">
                 <button onclick="setPayMethod('cod')" id="btn-cod" style="flex:1; padding:12px; background:var(--primary); color:black; border:none; border-radius:8px; font-weight:bold;">Cash</button>
                 <button onclick="setPayMethod('wallet')" id="btn-wallet" style="flex:1; padding:12px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px;">Wallet (₹<span id="btnWalletBal">0</span>)</button>
             </div>
@@ -195,6 +221,7 @@
                 <span onclick="closeModal('mapModal')" style="cursor:pointer; font-size:1.5rem;">&times;</span>
             </div>
             <div id="map" style="flex-grow:1;"></div>
+            <p style="text-align:center; font-size:0.8rem; color:var(--text-muted); margin:5px 0;">Tap map to set location. Must be < 2km.</p>
             <button onclick="confirmLocation()" style="width:100%; background:var(--primary); border:none; padding:15px; margin-top:10px; border-radius:10px; font-weight:bold; color:black;">Confirm Location</button>
         </div>
     </div>
@@ -203,8 +230,7 @@
     <div id="subModal" class="modal">
         <div class="modal-content">
             <span onclick="closeModal('subModal')" style="float:right; cursor:pointer;">&times;</span>
-            <h2>👑 Prime Memberships</h2>
-            <p style="color:var(--text-muted);">Get exclusive discounts & free delivery!</p>
+            <h2>👑 Prime Plans</h2>
             <div id="subList" style="display:grid; gap:15px; margin-top:20px;"></div>
         </div>
     </div>
@@ -236,7 +262,7 @@
             
             <div id="tab-inventory" class="tab-content">
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <button onclick="openProductManager()" class="add-btn" style="width:auto; margin:0;">+ Add Product</button>
+                    <button onclick="openProductManager()" class="add-btn" style="width:auto; margin:0;">+ Add</button>
                     <button onclick="sortInventory()" class="auth-btn">Sort Low Stock</button>
                 </div>
                 <div id="inventoryList"></div>
@@ -245,21 +271,18 @@
             <div id="tab-users" class="tab-content"><div id="usersList"></div></div>
             
             <div id="tab-owner" class="tab-content">
-                <!-- SUBSCRIPTION MANAGER -->
                 <div style="background:rgba(255,215,0,0.1); padding:15px; border-radius:10px; margin-bottom:20px;">
-                    <h3 style="color:var(--gold);">Manage Subscriptions</h3>
+                    <h3 style="color:var(--gold);">Subscriptions</h3>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                         <input type="text" id="subName" placeholder="Name (e.g. Gold)">
-                        <input type="number" id="subPrice" placeholder="Price (₹)">
-                        <input type="number" id="subDur" placeholder="Days (e.g. 30)">
+                        <input type="number" id="subPrice" placeholder="Price">
+                        <input type="number" id="subDur" placeholder="Days">
                         <input type="number" id="subDisc" placeholder="Discount %">
                     </div>
                     <label style="color:var(--text-muted); font-size:0.9rem;"><input type="checkbox" id="subFreeDel"> Free Delivery?</label>
                     <button onclick="addSubscriptionTier()" class="add-btn" style="margin-top:10px;">Add Tier</button>
                     <div id="adminSubList" style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px;"></div>
                 </div>
-
-                <h3 style="color:var(--text-muted);">Security</h3>
                 <input type="text" id="newOwnerPass" placeholder="New Password">
                 <button onclick="updateSettings()" class="add-btn">Update</button>
                 <button onclick="initSettings()" class="auth-btn" style="width:100%; margin-top:20px;">⚠️ Reset Defaults</button>
@@ -325,10 +348,25 @@
         let products = []; let cart = []; let currentUser = null; let walletBalance = 0;
         let payMethod = 'cod'; let userRole = 'none'; let currentFilter = 'all';
         let subTiers = []; let userSub = null; 
-
-        // --- MAP LOGIC (GUWAHATI) ---
-        const SCHOOL_COORDS = [26.143452, 91.793472]; 
+        
+        // V16: LOCATION LOGIC
+        let deliveryMode = 'inside'; // 'inside' or 'outside'
+        const SCHOOL_COORDS = [26.143452, 91.793472]; // Exact Guwahati Coords
         let map, marker, selectedDist = 0;
+
+        window.setDelType = (type) => {
+            deliveryMode = type;
+            document.querySelectorAll('.del-card').forEach(el => el.classList.remove('active'));
+            document.getElementById('btn-'+type).classList.add('active');
+            
+            if(type === 'inside') {
+                document.getElementById('insideSec').style.display = 'block';
+                document.getElementById('outsideSec').style.display = 'none';
+            } else {
+                document.getElementById('insideSec').style.display = 'none';
+                document.getElementById('outsideSec').style.display = 'block';
+            }
+        }
 
         window.openMapPicker = () => {
             openModal('mapModal');
@@ -410,7 +448,6 @@
 
         window.loadCart = () => { const saved = localStorage.getItem('ssa_cart'); if(saved) { cart = JSON.parse(saved); updateCartUI(); } }
 
-        // --- RENDER SHOP ---
         function renderContent(search = '') {
             const container = document.getElementById('contentArea'); container.innerHTML = "";
             let filtered = products;
@@ -505,7 +542,18 @@
             const name = document.getElementById('cName').value;
             
             if(!name) return showToast("Please enter Name", 'error');
-            if(selectedDist === 0) return showToast("Pick Location on Map", 'error');
+            
+            // V16 LOCATION LOGIC
+            let finalLocation = "";
+            if(deliveryMode === 'inside') {
+                const room = document.getElementById('cRoom').value;
+                if(!room) return showToast("Enter Class/Spot", 'error');
+                finalLocation = "Inside: " + room;
+            } else {
+                if(selectedDist === 0) return showToast("Pin Map Location", 'error');
+                const house = document.getElementById('cHouse').value;
+                finalLocation = `Outside: ${house || ''} (${selectedDist}km)`;
+            }
             
             let total = parseInt(document.getElementById('finalTotal').innerText);
             
@@ -520,7 +568,7 @@
                 if(payMethod === 'wallet') await updateDoc(doc(db, "users", currentUser.uid), { wallet: walletBalance - total });
                 
                 await addDoc(collection(db, "orders"), {
-                    customer: name, userId: currentUser ? currentUser.uid : null, location: "Map (" + selectedDist + "km)",
+                    customer: name, userId: currentUser ? currentUser.uid : null, location: finalLocation,
                     items: cart.map(i=>i.name), total: total, method: payMethod, status: 'Pending', timestamp: new Date()
                 });
                 
@@ -533,6 +581,7 @@
             } catch(e) { showToast(e.message, 'error'); }
             btn.innerHTML = 'PLACE ORDER'; btn.disabled = false;
         };
+
         // --- SUBSCRIPTIONS ---
         window.openSubscriptions = () => {
             openModal('subModal');
